@@ -79,4 +79,4 @@ def elabPpmCmd : CommandElab := fun
         (hash HtmlDisplayPanel.javascript)
         (return json% { html: $(← Server.rpcEncode ht) })
         stx
-      logInfoAt tk m!"Rendered PPM"
+      logInfoAt tk m!"Displaying PPM from: {ppm}"

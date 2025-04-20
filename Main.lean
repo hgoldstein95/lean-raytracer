@@ -43,10 +43,9 @@ def renderScene (logging : Bool := false) : IO PPM := do
       let pixelCenter : Point3 :=
         pixel00Loc + (i.toFloat * pixelDeltaU) + (j.toFloat * pixelDeltaV)
       let rayDirection : Vec3 := pixelCenter - cameraCenter
-      let r : Ray := {origin := cameraCenter, direction := rayDirection}
+      let r := {origin := cameraCenter, direction := rayDirection}
       image := image.addPixel <| rayColor r
-  if logging then
-    IO.eprintln s!"\nDone."
+  if logging then IO.eprintln s!"\nDone."
   return image
 
 #ppm renderScene
