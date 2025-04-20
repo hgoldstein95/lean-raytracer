@@ -59,6 +59,8 @@ def dot [Add α] [Mul α] (v w : Vec3' α) : α :=
   v.y * w.y +
   v.z * w.z
 
+notation a " ⬝ " b => dot a b
+
 end Vec3'
 
 @[reducible]

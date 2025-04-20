@@ -11,7 +11,7 @@ structure Sphere where
 def Ray.hitSphere (r : Ray) (s : Sphere) : Option Float :=
   let oc : Vec3 := s.center - r.origin
   let a := r.direction.lengthSquared
-  let h := r.direction.dot oc
+  let h := r.direction ⬝ oc
   let c := oc.lengthSquared - s.radius * s.radius
   let discriminant := h * h - a * c
   if discriminant >= 0 then (h - discriminant.sqrt) / a else none
