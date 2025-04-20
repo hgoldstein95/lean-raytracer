@@ -1,10 +1,10 @@
-namespace Vec3
-
 structure Vec3' (α : Type) where
   x : α
   y : α
   z : α
   deriving BEq, Repr
+
+namespace Vec3
 
 instance [ToString α] : ToString (Vec3' α) where
   toString v := s!"⟨{v.x}, {v.y}, {v.z}⟩"
@@ -54,11 +54,19 @@ instance
   where
   hDiv v c := v * (1 / c)
 
+def Vec3'.dot [Add α] [Mul α] (v w : Vec3' α) : α :=
+  v.x * w.x +
+  v.y * w.y +
+  v.z * w.z
+
 @[reducible]
 def Vec3 := Vec3' Float
 
 def Vec3.length (v : Vec3) : Float :=
-  Float.sqrt <| (v.x * v.x) + (v.y * v.y) + (v.z * v.z)
+  Float.sqrt <|
+    (v.x * v.x) +
+    (v.y * v.y) +
+    (v.z * v.z)
 
 def Vec3.normalize (v : Vec3) : Vec3 :=
   v / v.length
