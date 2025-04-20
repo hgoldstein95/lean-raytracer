@@ -3,7 +3,22 @@ import RayTracer.Widget.PPM
 
 open PPM RGB Vec3 Ray
 
-def rayColor (r : Ray) : RGB :=
+structure Sphere where
+  center : Point3
+  radius : Float
+  deriving BEq, Repr
+
+def hitsSphere (r : Ray) (s : Sphere) : Bool :=
+  let oc : Vec3 := s.center - r.origin
+  let a := r.direction.dot r.direction
+  let b := -2.0 * r.direction.dot oc
+  let c := oc.dot oc - s.radius * s.radius
+  let discriminant := b * b - 4 * a * c
+  discriminant >= 0
+
+def rayColor (r : Ray) : Id RGB := do
+  if hitsSphere r (Sphere.mk ⟨0, 0, -1⟩ 0.5) then
+    return RGB.ofVec3 ⟨1, 0, 0⟩
   let unitDirection := r.direction.normalize
   let a : Float := 0.5 * (unitDirection.y + 1)
   RGB.ofVec3 <| (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
@@ -44,11 +59,12 @@ def renderScene (logging : Bool := false) : IO PPM := do
         pixel00Loc + (i.toFloat * pixelDeltaU) + (j.toFloat * pixelDeltaV)
       let rayDirection : Vec3 := pixelCenter - cameraCenter
       let r := {origin := cameraCenter, direction := rayDirection}
-      image := image.addPixel <| rayColor r
+      image := image.addPixel (rayColor r)
   if logging then IO.eprintln s!"\nDone."
   return image
 
 #ppm renderScene
 
 def main : IO Unit := do
-  IO.print (← renderScene (logging := true)).display
+  let image ← renderScene (logging := true)
+  IO.print image.display
