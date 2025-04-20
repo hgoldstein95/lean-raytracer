@@ -33,7 +33,7 @@ def renderScene (logging : Bool := false) : IO PPM := do
       (viewportV / 2.0)
 
   let pixel00Loc : Vec3 :=
-    (viewportUpperLeft + (0.5 : Float)) + (pixelDeltaU + pixelDeltaV)
+    viewportUpperLeft + (0.5 : Float) * (pixelDeltaU + pixelDeltaV)
 
   let mut image := PPM.empty imageWidth imageHeight
   for j in List.range image.height.toNat do
