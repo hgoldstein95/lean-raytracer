@@ -1,25 +1,13 @@
 import RayTracer
 import RayTracer.Widget.PPM
+import RayTracer.Hit
+import RayTracer.Shapes.Sphere
 
 open PPM RGB Vec3 Ray
 
-structure Sphere where
-  center : Point3
-  radius : Float
-  deriving BEq, Repr
-
-def Ray.hitSphere (r : Ray) (s : Sphere) : Option Float :=
-  let oc : Vec3 := s.center - r.origin
-  let a := r.direction.lengthSquared
-  let h := r.direction ⬝ oc
-  let c := oc.lengthSquared - s.radius * s.radius
-  let discriminant := h * h - a * c
-  if discriminant >= 0 then (h - discriminant.sqrt) / a else none
-
 def rayColor (r : Ray) : Id RGB := do
-  if let some t := r.hitSphere (Sphere.mk ⟨0, 0, -1⟩ 0.5) then
-    let norm := Vec3.normalize (r.at t - ⟨0, 0, -1⟩)
-    return RGB.ofVec3 (0.5 * (norm + 1))
+  if let some collision := Hit.hit (Sphere.mk ⟨0, 0, -1⟩ 0.5) r then
+    return RGB.ofVec3 (0.5 * (collision.normal + 1))
   let unitDirection := r.direction.normalize
   let a : Float := 0.5 * (unitDirection.y + 1)
   RGB.ofVec3 <| (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
