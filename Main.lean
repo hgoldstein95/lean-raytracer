@@ -8,17 +8,18 @@ structure Sphere where
   radius : Float
   deriving BEq, Repr
 
-def hitsSphere (r : Ray) (s : Sphere) : Bool :=
+def Ray.hitSphere (r : Ray) (s : Sphere) : Option Float :=
   let oc : Vec3 := s.center - r.origin
-  let a := r.direction.dot r.direction
-  let b := -2.0 * r.direction.dot oc
-  let c := oc.dot oc - s.radius * s.radius
-  let discriminant := b * b - 4 * a * c
-  discriminant >= 0
+  let a := r.direction.lengthSquared
+  let h := r.direction.dot oc
+  let c := oc.lengthSquared - s.radius * s.radius
+  let discriminant := h * h - a * c
+  if discriminant >= 0 then (h - discriminant.sqrt) / a else none
 
 def rayColor (r : Ray) : Id RGB := do
-  if hitsSphere r (Sphere.mk ⟨0, 0, -1⟩ 0.5) then
-    return RGB.ofVec3 ⟨1, 0, 0⟩
+  if let some t := r.hitSphere (Sphere.mk ⟨0, 0, -1⟩ 0.5) then
+    let norm := Vec3.normalize (r.at t - ⟨0, 0, -1⟩)
+    return RGB.ofVec3 (0.5 * (norm + 1))
   let unitDirection := r.direction.normalize
   let a : Float := 0.5 * (unitDirection.y + 1)
   RGB.ofVec3 <| (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
@@ -48,7 +49,7 @@ def renderScene (logging : Bool := false) : IO PPM := do
       (viewportV / 2.0)
 
   let pixel00Loc : Vec3 :=
-    viewportUpperLeft + (0.5 : Float) * (pixelDeltaU + pixelDeltaV)
+    viewportUpperLeft + 0.5 * (pixelDeltaU + pixelDeltaV)
 
   let mut image := PPM.empty imageWidth imageHeight
   for j in List.range image.height.toNat do
