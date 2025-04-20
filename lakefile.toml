@@ -8,3 +8,8 @@ name = "RayTracer"
 [[lean_exe]]
 name = "raytracer"
 root = "Main"
+
+[[require]]
+name = "proofwidgets"
+git = "https://github.com/leanprover-community/ProofWidgets4"
+rev = "v0.0.56"

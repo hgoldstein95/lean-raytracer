@@ -1,17 +1,14 @@
 import RayTracer
+import RayTracer.Widget.PPM
 
 open PPM RGB Vec3 Ray
-
-structure RenderContext where
-  width: UInt64
-  height: UInt64
 
 def rayColor (r : Ray) : RGB :=
   let unitDirection := r.direction.normalize
   let a : Float := 0.5 * (unitDirection.y + 1)
   RGB.ofVec3 <| (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
 
-def main : IO Unit := do
+def renderScene (logging : Bool := false) : IO PPM := do
   let aspectRatio : Float := 16.0 / 9.0
 
   let imageWidth : UInt64 := 400
@@ -40,13 +37,19 @@ def main : IO Unit := do
 
   let mut image := PPM.empty imageWidth imageHeight
   for j in List.range image.height.toNat do
-    IO.eprintln s!"Lines remaining: {image.height.toNat - j}"
+    if logging then
+      IO.eprint s!"Rendering: {progressBar j (image.height.toNat - 1)}\r"
     for i in List.range image.width.toNat do
       let pixelCenter : Point3 :=
         pixel00Loc + (i.toFloat * pixelDeltaU) + (j.toFloat * pixelDeltaV)
       let rayDirection : Vec3 := pixelCenter - cameraCenter
       let r : Ray := {origin := cameraCenter, direction := rayDirection}
       image := image.addPixel <| rayColor r
-  IO.eprintln s!"Done."
+  if logging then
+    IO.eprintln s!"\nDone."
+  return image
 
-  IO.print image.display
+#ppm renderScene
+
+def main : IO Unit := do
+  IO.print (← renderScene (logging := true)).display

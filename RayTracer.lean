@@ -5,3 +5,4 @@ import RayTracer.PPM
 import RayTracer.Ray
 import RayTracer.Vec3
 import RayTracer.RGB
+import RayTracer.Util
