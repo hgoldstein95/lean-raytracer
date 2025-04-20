@@ -1,0 +1,52 @@
+import RayTracer
+
+open PPM RGB Vec3 Ray
+
+structure RenderContext where
+  width: UInt64
+  height: UInt64
+
+def rayColor (r : Ray) : RGB :=
+  let unitDirection := r.direction.normalize
+  let a : Float := 0.5 * (unitDirection.y + 1)
+  RGB.ofVec3 <| (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
+
+def main : IO Unit := do
+  let aspectRatio : Float := 16.0 / 9.0
+
+  let imageWidth : UInt64 := 400
+  let imageHeight : UInt64 := max (imageWidth.toFloat / aspectRatio).toUInt64 1
+
+  let focalLength : Float := 1.0
+  let viewportHeight : Float := 2
+  let viewportWidth : Float :=
+    viewportHeight * (imageWidth.toFloat / imageHeight.toFloat)
+  let cameraCenter : Point3 := 0
+
+  let viewportU : Vec3 := ⟨viewportWidth, 0, 0⟩
+  let viewportV : Vec3 := ⟨0, -viewportHeight, 0⟩
+
+  let pixelDeltaU : Vec3 := viewportU / imageWidth.toFloat
+  let pixelDeltaV : Vec3 := viewportV / imageHeight.toFloat
+
+  let viewportUpperLeft : Vec3 :=
+    cameraCenter -
+      ⟨0, 0, focalLength⟩ -
+      (viewportU / 2.0) -
+      (viewportV / 2.0)
+
+  let pixel00Loc : Vec3 :=
+    (viewportUpperLeft + (0.5 : Float)) + (pixelDeltaU + pixelDeltaV)
+
+  let mut image := PPM.empty imageWidth imageHeight
+  for j in List.range image.height.toNat do
+    IO.eprintln s!"Lines remaining: {image.height.toNat - j}"
+    for i in List.range image.width.toNat do
+      let pixelCenter : Point3 :=
+        pixel00Loc + (i.toFloat * pixelDeltaU) + (j.toFloat * pixelDeltaV)
+      let rayDirection : Vec3 := pixelCenter - cameraCenter
+      let r : Ray := {origin := cameraCenter, direction := rayDirection}
+      image := image.addPixel <| rayColor r
+  IO.eprintln s!"Done."
+
+  IO.print image.display

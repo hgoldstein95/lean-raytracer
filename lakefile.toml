@@ -1,0 +1,10 @@
+name = "RayTracer"
+version = "0.1.0"
+defaultTargets = ["raytracer"]
+
+[[lean_lib]]
+name = "RayTracer"
+
+[[lean_exe]]
+name = "raytracer"
+root = "Main"
