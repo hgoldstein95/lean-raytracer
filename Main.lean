@@ -12,9 +12,9 @@ def main : IO Unit := do
   let config := {
     aspectRatio := 16.0 / 9.0,
     imageWidth := 400,
-    samplesPerPixel := 100,
     maxRayDepth := 50,
-    logging := true
+    logging := true,
+    samplesPerPixel := 50,
   }
   let camera ← Camera.init config
   IO.println <| PPM.display (← camera.render spheres)
