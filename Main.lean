@@ -21,7 +21,7 @@ def world :=
     Sphere.mk {
       center := ⟨-1.0, 0.0, -1.0⟩,
       radius := 0.5,
-      material := Metal.mk ⟨0.8, 0.8, 0.8⟩ 0.3
+      material := Dielectric.mk 1.5
     },
     -- Right
     Sphere.mk {
