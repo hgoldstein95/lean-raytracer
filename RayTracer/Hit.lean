@@ -26,7 +26,7 @@ def Collision.mkOutwardNormal
     frontFace := frontFace
   }
 
-class Hit (α : Type) where
+class Hit (α : Type u) where
   hit
     (obj : α)
     (r : Ray)
@@ -44,3 +44,8 @@ instance [Hit α] : Hit (List α) where
         closestSoFar := collision.t
         result := some collision
     result
+
+def Hittable : Type 1 := Σ (α : Type), Hit α × α
+
+instance : Hit Hittable where
+  hit := λ ⟨_, _, a⟩ r tmin tmax => Hit.hit a r tmin tmax
