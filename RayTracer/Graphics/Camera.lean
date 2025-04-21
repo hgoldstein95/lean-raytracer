@@ -1,6 +1,6 @@
-import RayTracer.Graphics.PPM
 import RayTracer.Geometry.Ray
-import RayTracer.Geometry.Hit
+import RayTracer.Graphics.PPM
+import RayTracer.Entities.Entity
 
 open PPM RGB Vec3 Ray
 
@@ -90,11 +90,11 @@ private def getRay (camera : Camera) (i j : Float) : IO Ray := do
   let direction : Vec3 := pixelSample - camera.center
   pure {origin := camera.center, direction}
 
-private partial def rayColor [Hit World] (r : Ray) (world : World) (fuel : Nat) : IO Vec3 := do
+private partial def rayColor (r : Ray) (world : Entity) (fuel : Nat) : IO Vec3 := do
   if fuel == 0 then
     return 0
 
-  if let some collision := Hit.hit world r ⟨0.001, Float.infinity⟩ then
+  if let some collision := world r ⟨0.001, Float.infinity⟩ then
     let scatter ← collision.material r collision.normal collision.point
     let color ← rayColor scatter.scattered world (fuel - 1)
     return scatter.attenuation * color
@@ -103,9 +103,8 @@ private partial def rayColor [Hit World] (r : Ray) (world : World) (fuel : Nat) 
   return (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
 
 def render
-    [Hit γ]
     (camera : Camera)
-    (world : γ) :
+    (world : Entity) :
     IO PPM := do
   let mut image := PPM.init camera.imageWidth camera.imageHeight
   for j in List.range camera.imageHeight.toNat do

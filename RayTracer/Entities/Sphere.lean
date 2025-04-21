@@ -1,17 +1,19 @@
 import RayTracer.Geometry.Vec3
 import RayTracer.Geometry.Ray
-import RayTracer.Geometry.Hit
 import RayTracer.Graphics.Material
+import RayTracer.Entities.Entity
 
 open Ray
 
-structure Sphere where
+namespace Sphere
+
+structure Args where
   center : Point3
   radius : Float
   material : Material
 
-instance : Hit Sphere where
-  hit := λ (s : Sphere) (r : Ray) tRange => do
+def mk (s : Args) : Entity :=
+  λ (r : Ray) tRange => do
     let oc : Vec3 := s.center - r.origin
     let a := r.direction.lengthSquared
     let h := r.direction ⬝ oc
@@ -38,3 +40,5 @@ instance : Hit Sphere where
       Collision.mkWithOutwardNormal r t point outwardNormal s.material
     else
       none
+
+end Sphere

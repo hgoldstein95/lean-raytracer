@@ -11,10 +11,14 @@ def Material :=
   (point : Point3) →
   IO ScatterResult
 
-def lambertian (albedo : Float) : Material := λ _ normal point => do
+namespace Lambertian
+
+def mk (albedo : Float) : Material := λ _ normal point => do
   let v ← Vec3.randomUnit
   let direction := normal + v
   pure {
     scattered := {origin := point, direction},
     attenuation := albedo,
   }
+
+end Lambertian
