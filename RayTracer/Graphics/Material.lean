@@ -2,7 +2,7 @@ import RayTracer.Geometry.Ray
 import RayTracer.Geometry.Vec3
 
 structure ScatterResult where
-  attenuation : Float
+  attenuation : Vec3
   scattered : Ray
 
 def Material :=
@@ -13,7 +13,7 @@ def Material :=
 
 namespace Lambertian
 
-def mk (albedo : Float) : Material := λ _ normal point => do
+def mk (albedo : Vec3) : Material := λ _ normal point => do
   let v ← Vec3.randomUnit
   let directionCandidate : Vec3 := normal + v
 
@@ -26,3 +26,13 @@ def mk (albedo : Float) : Material := λ _ normal point => do
   }
 
 end Lambertian
+
+namespace Metal
+
+def mk (albedo : Vec3) : Material := λ r normal point => do
+  let reflected := Vec3.reflect r.direction normal
+  let scattered := {origin := point, direction := reflected}
+  let attenuation := albedo
+  return {scattered, attenuation}
+
+end Metal

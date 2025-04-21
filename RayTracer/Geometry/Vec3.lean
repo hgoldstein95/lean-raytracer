@@ -40,12 +40,15 @@ instance [Sub α] : HSub (Vec3' α) (Vec3' α) (Vec3' α) where
 instance [Sub α] : HSub (Vec3' α) α (Vec3' α) where
   hSub v c := v - ⟨c, c, c⟩
 
-instance [Mul α] : HMul (Vec3' α) α (Vec3' α) where
-  hMul v c := {
-    x := v.x * c,
-    y := v.y * c,
-    z := v.z * c
+instance [Mul α] : HMul (Vec3' α) (Vec3' α) (Vec3' α) where
+  hMul v w := {
+    x := v.x * w.x,
+    y := v.y * w.y,
+    z := v.z * w.z
   }
+
+instance [Mul α] : HMul (Vec3' α) α (Vec3' α) where
+  hMul v c := v * ⟨c, c, c⟩
 
 instance [Mul α] : HMul α (Vec3' α) (Vec3' α) where
   hMul c v := v * c
@@ -80,11 +83,14 @@ def length (v : Vec3) : Float := v.lengthSquared.sqrt
 def normalize (v : Vec3) : Vec3 := v / v.length
 
 def projectToHemisphere (v : Vec3) (normal : Vec3) : Vec3 :=
-  if (v ⬝ normal) > 0.0 then v else -1.0 * v
+  if (v ⬝ normal) > 0.0 then v else (-1.0 : Float) * v
 
 def isNearZero (v : Vec3) : Bool :=
   let s := 1e-8
   v.x.abs < s && v.y.abs < s && v.z.abs < s
+
+def reflect (v n : Vec3) : Vec3 :=
+  v - 2 * (v ⬝ n) * n
 
 def random : IO Vec3 := do
   pure ⟨(← IO.randFloat), (← IO.randFloat), (← IO.randFloat)⟩

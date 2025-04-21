@@ -61,7 +61,7 @@ def init (config : CameraConfig := default) : IO Camera := do
       (viewportU / 2.0) -
       (viewportV / 2.0)
   let pixel00Loc : Vec3 :=
-    viewportUpperLeft + 0.5 * (pixelDeltaU + pixelDeltaV)
+    viewportUpperLeft + (0.5 : Float) * (pixelDeltaU + pixelDeltaV)
 
   return {
     aspectRatio,

@@ -17,5 +17,5 @@ def Collision.mkWithOutwardNormal
     (material : Material) :
     Collision :=
   let frontFace := (r.direction ⬝ outwardNormal) < 0.0
-  let normal := if frontFace then outwardNormal else -1.0 * outwardNormal
+  let normal := if frontFace then outwardNormal else (-1.0 : Float) * outwardNormal
   {t, point, normal, frontFace, material}
