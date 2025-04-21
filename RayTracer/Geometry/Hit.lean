@@ -1,6 +1,7 @@
 import RayTracer.Util
 import RayTracer.Geometry.Vec3
 import RayTracer.Geometry.Ray
+import RayTracer.Geometry.Interval
 
 structure Collision where
   t : Float
@@ -28,17 +29,17 @@ class Hit (α : Type u) where
   hit
     (obj : α)
     (r : Ray)
-    (tmin : Float := -Float.infinity)
-    (tmax : Float := Float.infinity) :
+    (tRange : Interval) :
     Option Collision
 
 instance [Hit α] : Hit (List α) where
   -- TODO: Refactor this, it doesn't need to be so imperative
-  hit := λ (objs : List α) (r : Ray) tmin tmax => do
+  hit := λ (objs : List α) (r : Ray) tRange => do
     let mut result := none
-    let mut closestSoFar := tmax
+    let mut closestSoFar := tRange.max
     for obj in objs do
-      if let some collision := Hit.hit obj r tmin closestSoFar then do
+      let tRange' := {tRange with max := closestSoFar}
+      if let some collision := Hit.hit obj r tRange' then do
         closestSoFar := collision.t
         result := some collision
     result
@@ -48,4 +49,4 @@ def Hittable : Type 1 := Σ (α : Type), Hit α × α
 def Hittable.mk {α : Type} [Hit α] (a : α) : Hittable := ⟨α, by assumption, a⟩
 
 instance : Hit Hittable where
-  hit := λ ⟨_, _, a⟩ r tmin tmax => Hit.hit a r tmin tmax
+  hit := λ ⟨_, _, a⟩ r tRange => Hit.hit a r tRange

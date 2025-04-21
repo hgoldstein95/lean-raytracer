@@ -5,7 +5,7 @@ open PPM RGB Vec3 Ray
 
 def rayColor (r : Ray) (world : List Hittable) : Id RGB := do
   -- Check for a collision with something in the world
-  if let some collision := Hit.hit world r (tmin := 0) then
+  if let some collision := Hit.hit world r ⟨0, Float.infinity⟩ then
     return RGB.ofVec3 (0.5 * (collision.normal + 1))
 
   -- Otherwise just show the sky gradient

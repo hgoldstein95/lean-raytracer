@@ -10,7 +10,7 @@ structure Sphere where
   deriving BEq, Repr
 
 instance : Hit Sphere where
-  hit := λ (s : Sphere) (r : Ray) tmin tmax => do
+  hit := λ (s : Sphere) (r : Ray) tRange => do
     let oc : Vec3 := s.center - r.origin
     let a := r.direction.lengthSquared
     let h := r.direction ⬝ oc
@@ -23,9 +23,9 @@ instance : Hit Sphere where
     let root₂ := (h + discriminant.sqrt) / a
 
     let root : Option Float :=
-      if tmin <= root₁ && root₁ <= tmax then
+      if tRange.contains root₁ then
         root₁
-      else if tmin <= root₂ && root₂ <= tmax then
+      else if tRange.contains root₂ then
         root₂
       else
         none
