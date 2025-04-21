@@ -5,3 +5,10 @@ def progressBar (p outOf : Nat) (ticks : Nat := 10) : String :=
     |> String.join
     |> (· ++ "|")
     |> ("|" ++ ·)
+
+def Float.infinity := 1.0 / 0.0
+
+def Float.PI := 3.14159265358
+
+def Float.degreesToRadians (degrees : Float) : Float :=
+  degrees * Float.PI / 180.0

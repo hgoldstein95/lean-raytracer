@@ -1,5 +1,6 @@
 import RayTracer.Vec3
 import RayTracer.Ray
+import RayTracer.Util
 
 open Vec3
 
@@ -29,11 +30,12 @@ class Hit (α : Type) where
   hit
     (obj : α)
     (r : Ray)
-    (tmin : Float := -1.0 / 0.0)
-    (tmax : Float := 1.0 / 0.0) :
+    (tmin : Float := -Float.infinity)
+    (tmax : Float := Float.infinity) :
     Option Collision
 
 instance [Hit α] : Hit (List α) where
+  -- TODO: Refactor this, it doesn't need to be so imperative
   hit := λ (objs : List α) (r : Ray) tmin tmax => do
     let mut result := none
     let mut closestSoFar := tmax
