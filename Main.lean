@@ -14,7 +14,7 @@ def main : IO Unit := do
     imageWidth := 400,
     maxRayDepth := 50,
     logging := true,
-    samplesPerPixel := 50,
+    samplesPerPixel := 100,
   }
   let camera ← Camera.init config
   IO.println <| PPM.display (← camera.render spheres)

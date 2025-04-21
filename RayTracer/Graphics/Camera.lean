@@ -80,13 +80,13 @@ def init (config : CameraConfig := default) : IO Camera := do
 private def sampleSquare : IO Vec3 := do
   pure ⟨(← IO.randFloat) - 0.5, (← IO.randFloat) - 0.5, 0⟩
 
-private def getRay (camera : Camera) (i j : Nat) : IO Ray := do
+private def getRay (camera : Camera) (i j : Float) : IO Ray := do
   let offset ←
     if camera.samplesPerPixel > 1 then sampleSquare else pure 0
   let pixelSample : Point3 :=
     camera.pixel00Loc +
-    ((i.toFloat + offset.x) * camera.pixelDeltaU) +
-    ((j.toFloat + offset.y) * camera.pixelDeltaV)
+    ((i + offset.x) * camera.pixelDeltaU) +
+    ((j + offset.y) * camera.pixelDeltaV)
   let direction : Vec3 := pixelSample - camera.center
   pure {origin := camera.center, direction}
 
@@ -113,7 +113,7 @@ def render
     for i in List.range camera.imageWidth.toNat do
       let mut color : Vec3 := ⟨0, 0, 0⟩
       for _ in List.range camera.samplesPerPixel do
-        let ray ← camera.getRay i j
+        let ray ← camera.getRay i.toInt32.toFloat j.toInt32.toFloat
         color := color + (← rayColor ray world camera.maxRayDepth)
       image := image.addPixel <| RGB.ofVec3 (color * camera.pixelScaleFactor)
 
