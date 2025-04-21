@@ -1,3 +1,4 @@
+import Lean
 import RayTracer.Util
 import RayTracer.Geometry.Vec3
 import RayTracer.Geometry.Ray
@@ -12,7 +13,7 @@ inductive Entity where
       (material : Material)
   | ofList
       (objs : List Entity)
-  deriving BEq, Repr
+  deriving BEq, Repr, Lean.ToJson, Lean.FromJson
 
 namespace Entity
 

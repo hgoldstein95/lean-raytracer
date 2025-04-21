@@ -1,10 +1,11 @@
+import Lean
 import RayTracer.FastRandom
 
 structure Vec3' (α : Type) where
   x : α
   y : α
   z : α
-  deriving BEq, Repr
+  deriving BEq, Repr, Lean.ToJson, Lean.FromJson
 
 namespace Vec3'
 

@@ -88,7 +88,11 @@ private def getRay (camera : Camera) (i j : Float) : IO Ray := do
   let direction : Vec3 := pixelSample - camera.center
   pure {origin := camera.center, direction}
 
-private partial def rayColor (r : Ray) (world : Entity) (fuel : Nat) : IO Vec3 := do
+private partial def rayColor
+    (r : Ray)
+    (world : Entity)
+    (fuel : Nat) :
+    IO Vec3 := do
   if fuel == 0 then
     return 0
 
@@ -107,6 +111,9 @@ def render
     (camera : Camera)
     (world : Entity) :
     IO PPM := do
+  if camera.logging then
+    IO.eprintln s!"World: {Lean.ToJson.toJson world}"
+
   let mut image := PPM.init camera.imageWidth camera.imageHeight
   for j in List.range camera.imageHeight.toNat do
     for i in List.range camera.imageWidth.toNat do

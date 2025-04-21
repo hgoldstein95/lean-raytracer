@@ -1,0 +1,79 @@
+{
+  "ofList": {
+    "objs": [
+      {
+        "sphere": {
+          "radius": 100,
+          "material": {
+            "lambertian": {
+              "albedo": {
+                "z": 0,
+                "y": 0.8,
+                "x": 0.8
+              }
+            }
+          },
+          "center": {
+            "z": -1,
+            "y": -100.5,
+            "x": 0
+          }
+        }
+      },
+      {
+        "sphere": {
+          "radius": 0.5,
+          "material": {
+            "lambertian": {
+              "albedo": {
+                "z": 0.5,
+                "y": 0.2,
+                "x": 0.1
+              }
+            }
+          },
+          "center": {
+            "z": -1.2,
+            "y": 0,
+            "x": 0
+          }
+        }
+      },
+      {
+        "sphere": {
+          "radius": 0.5,
+          "material": {
+            "dialectric": {
+              "refractionIndex": 1.5
+            }
+          },
+          "center": {
+            "z": -1,
+            "y": 0,
+            "x": -1
+          }
+        }
+      },
+      {
+        "sphere": {
+          "radius": 0.5,
+          "material": {
+            "metal": {
+              "fuzz": 1,
+              "albedo": {
+                "z": 0.2,
+                "y": 0.6,
+                "x": 0.8
+              }
+            }
+          },
+          "center": {
+            "z": -1,
+            "y": 0,
+            "x": 1
+          }
+        }
+      }
+    ]
+  }
+}
