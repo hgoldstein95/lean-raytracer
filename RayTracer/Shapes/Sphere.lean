@@ -32,7 +32,7 @@ instance : Hit Sphere where
 
     if let some t := root then
       let point := r.at t
-      let normal := Vec3.normalize (point - s.center)
-      some {t := t, point := point, normal := normal}
+      let outwardNormal := Vec3.normalize (point - s.center)
+      Collision.mkOutwardNormal r t point outwardNormal
     else
       none
