@@ -1,4 +1,4 @@
-import RayTracer.Vec3
+import RayTracer.Geometry.Vec3
 
 open Vec3
 

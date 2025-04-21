@@ -1,7 +1,5 @@
-import RayTracer
 import RayTracer.Widget.PPM
-import RayTracer.Hit
-import RayTracer.Shapes.Sphere
+import RayTracer.Basic
 
 open PPM RGB Vec3 Ray
 
@@ -61,8 +59,7 @@ def renderWorld (world : List Hittable) (logging : Bool := false) : IO PPM := do
   if logging then IO.eprintln s!"\nDone."
   return image
 
-def spheres : List Hittable :=
-  [
+def spheres : List Hittable := [
     Hittable.mk (Sphere.mk ⟨0, 0, -1⟩ 0.5),
     Hittable.mk (Sphere.mk ⟨0, -100.5, -1⟩ 100)
   ]

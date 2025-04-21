@@ -1,8 +1,6 @@
-import RayTracer.Vec3
-import RayTracer.Ray
 import RayTracer.Util
-
-open Vec3
+import RayTracer.Geometry.Vec3
+import RayTracer.Geometry.Ray
 
 structure Collision where
   t : Float

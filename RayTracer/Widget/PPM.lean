@@ -1,4 +1,4 @@
-import RayTracer.PPM
+import RayTracer.Graphics.PPM
 import RayTracer.Widget.Slider
 import ProofWidgets.Component.Basic
 import ProofWidgets.Component.HtmlDisplay

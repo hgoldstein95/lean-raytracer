@@ -1,4 +1,4 @@
-import RayTracer.RGB
+import RayTracer.Graphics.RGB
 
 open RGB
 
