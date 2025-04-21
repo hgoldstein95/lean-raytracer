@@ -3,5 +3,4 @@ import RayTracer.Geometry.Ray
 import RayTracer.Graphics.PPM
 import RayTracer.Graphics.Camera
 import RayTracer.Graphics.Material
-import RayTracer.Entities.Entity
-import RayTracer.Entities.Sphere
+import RayTracer.Graphics.Entity

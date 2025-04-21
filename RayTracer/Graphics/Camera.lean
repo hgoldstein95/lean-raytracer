@@ -1,8 +1,6 @@
 import RayTracer.Geometry.Ray
 import RayTracer.Graphics.PPM
-import RayTracer.Entities.Entity
-
-open PPM RGB Vec3 Ray
+import RayTracer.Graphics.Entity
 
 structure CameraConfig where
   aspectRatio : Float

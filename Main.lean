@@ -1,8 +1,6 @@
 import RayTracer.Widget.PPM
 import RayTracer.Basic
 
-open PPM RGB Vec3 Ray
-
 def world :=
   Entity.ofList [
     -- Ground
