@@ -96,7 +96,7 @@ private partial def rayColor [Hit World] (r : Ray) (world : World) (fuel : Nat) 
 
   if let some collision := Hit.hit world r ⟨0.001, Float.infinity⟩ then
     let v ← Vec3.randomUnit
-    let direction := v.projectToHemisphere collision.normal
+    let direction := collision.normal + v
     let color ← rayColor {origin := collision.point, direction} world (fuel - 1)
     return 0.5 * color
 
@@ -118,7 +118,8 @@ def render
       image := image.addPixel <| RGB.ofVec3 (color * camera.pixelScaleFactor)
 
     if camera.logging then
-      IO.eprint s!"Rendering: {progressBar j (camera.imageHeight.toNat - 1) (ticks := 20)}\r"
+      let bar := progressBar j (camera.imageHeight.toNat - 1) (ticks := 30)
+      IO.eprint s!"Rendering: {bar}\r"
 
   if camera.logging then IO.eprintln s!"\nDone."
   return image
