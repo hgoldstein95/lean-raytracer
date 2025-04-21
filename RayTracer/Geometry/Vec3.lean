@@ -1,4 +1,4 @@
-import RayTracer.Util
+import RayTracer.FastRandom
 
 structure Vec3' (α : Type) where
   x : α
