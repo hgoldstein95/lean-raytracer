@@ -11,10 +11,10 @@ structure PPM where
   deriving Repr
 
 def PPM.empty (width height : UInt64) : PPM :=
-  {width, height, pixels := #[]}
+  {width, height, pixels := Array.emptyWithCapacity (width.toNat * height.toNat)}
 
 def PPM.addPixel (image : PPM) (px : RGB) : PPM :=
-  {image with pixels := image.pixels.append #[px]}
+  {image with pixels := image.pixels.push px}
 
 def PPM.display (image : PPM) : String :=
   let pixels := image.pixels.foldr (λ x acc => x.display ++ "\n" ++ acc) ""
