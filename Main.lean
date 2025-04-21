@@ -61,10 +61,11 @@ def renderWorld (world : List Hittable) (logging : Bool := false) : IO PPM := do
   if logging then IO.eprintln s!"\nDone."
   return image
 
-def spheres : List Hittable := [
-  ⟨Sphere, instHitSphere, Sphere.mk ⟨0, 0, -1⟩ 0.5⟩,
-  ⟨Sphere, instHitSphere, Sphere.mk ⟨0, -100.5, -1⟩ 100⟩
-]
+def spheres : List Hittable :=
+  [
+    Hittable.mk (Sphere.mk ⟨0, 0, -1⟩ 0.5),
+    Hittable.mk (Sphere.mk ⟨0, -100.5, -1⟩ 100)
+  ]
 
 #ppm renderWorld spheres
 

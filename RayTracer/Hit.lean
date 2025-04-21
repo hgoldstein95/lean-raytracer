@@ -47,5 +47,7 @@ instance [Hit α] : Hit (List α) where
 
 def Hittable : Type 1 := Σ (α : Type), Hit α × α
 
+def Hittable.mk {α : Type} [Hit α] (a : α) : Hittable := ⟨α, by assumption, a⟩
+
 instance : Hit Hittable where
   hit := λ ⟨_, _, a⟩ r tmin tmax => Hit.hit a r tmin tmax
