@@ -8,9 +8,16 @@ structure CameraConfig where
   aspectRatio : Float
   imageWidth : UInt64
   samplesPerPixel : Nat
+  logging : Bool
+  deriving BEq, Repr
 
 instance : Inhabited CameraConfig where
-  default := ⟨16.0 / 9.0, 400, 10⟩
+  default := {
+    aspectRatio := 16.0 / 9.0,
+    imageWidth := 400,
+    samplesPerPixel := 10,
+    logging := false
+  }
 
 structure Camera where
   aspectRatio : Float
@@ -21,10 +28,14 @@ structure Camera where
   pixel00Loc : Vec3
   pixelDeltaU : Vec3
   pixelDeltaV : Vec3
+  logging : Bool
 
 namespace Camera
 
-def init (config : CameraConfig := default) : Camera :=
+def init (config : CameraConfig := default) : IO Camera := do
+  if config.logging then
+    IO.eprintln s!"Config: {repr config}"
+
   let aspectRatio : Float := config.aspectRatio
   let imageWidth : UInt64 := config.imageWidth
   let imageHeight : UInt64 := max (imageWidth.toFloat / aspectRatio).toUInt64 1
@@ -48,7 +59,7 @@ def init (config : CameraConfig := default) : Camera :=
   let pixel00Loc : Vec3 :=
     viewportUpperLeft + 0.5 * (pixelDeltaU + pixelDeltaV)
 
-  {
+  return {
     aspectRatio,
     imageWidth,
     imageHeight,
@@ -56,19 +67,16 @@ def init (config : CameraConfig := default) : Camera :=
     center := cameraCenter,
     pixel00Loc,
     pixelDeltaU,
-    pixelDeltaV
+    pixelDeltaV,
+    logging := config.logging,
   }
 
-private def randFloat : IO Float := do
-  let n ← IO.rand 0 10000
-  pure (n.toFloat / 10000.0)
-
-private def sampleSquare : Unit → IO Vec3 := λ () => do
-  pure ⟨(← randFloat) - 0.5, (← randFloat) - 0.5, 0⟩
+private def sampleSquare : IO Vec3 := do
+  pure ⟨(← IO.randFloat) - 0.5, (← IO.randFloat) - 0.5, 0⟩
 
 private def getRay (camera : Camera) (i j : Nat) : IO Ray := do
   let offset ←
-    if camera.samplesPerPixel > 1 then sampleSquare () else pure 0
+    if camera.samplesPerPixel > 1 then sampleSquare else pure 0
   let pixelSample : Point3 :=
     camera.pixel00Loc +
     ((i.toFloat + offset.x) * camera.pixelDeltaU) +
@@ -86,8 +94,7 @@ private def rayColor [Hit World] (r : Ray) (world : World) : Vec3 := Id.run do
 def renderWorld
     [Hit World]
     (camera : Camera)
-    (world : World)
-    (logging : Bool := false) :
+    (world : World) :
     IO PPM := do
   let mut image := PPM.empty camera.imageWidth camera.imageHeight
   for j in List.range image.height.toNat do
@@ -98,10 +105,10 @@ def renderWorld
         color := color + rayColor ray world
       image := image.addPixel <| RGB.ofVec3 (color / camera.samplesPerPixel.toFloat)
 
-    if logging then
+    if camera.logging then
       IO.eprint s!"Rendering: {progressBar j (image.height.toNat - 1) (ticks := 20)}\r"
 
-  if logging then IO.eprintln s!"\nDone."
+  if camera.logging then IO.eprintln s!"\nDone."
   return image
 
 end Camera

@@ -12,3 +12,10 @@ def Float.PI := 3.14159265358
 
 def Float.degreesToRadians (degrees : Float) : Float :=
   degrees * Float.PI / 180.0
+
+def IO.randFloat : IO Float := do
+  let g ← IO.stdGenRef.get
+  let ⟨lo, hi⟩ := RandomGen.range g
+  let ⟨n, g'⟩ := RandomGen.next g
+  IO.stdGenRef.set g'
+  pure ((n - lo).toFloat / (hi - lo).toFloat)
