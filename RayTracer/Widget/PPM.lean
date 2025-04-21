@@ -56,11 +56,13 @@ def renderPPM
     (comp : IO PPM) :
     CommandElabM Html := do
   let image ← comp
-  pure <PPMViewer
-      width={image.width.toNat}
-      height={image.height.toNat}
-      pixels={image.pixels.toList.map (λ p => ⟨p.r.toNat, p.g.toNat, p.b.toNat⟩)}
-    />
+  pure <div>
+      <PPMViewer
+        width={image.width.toNat}
+        height={image.height.toNat}
+        pixels={image.pixels.toList.map (λ p => ⟨p.r.toNat, p.g.toNat, p.b.toNat⟩)}
+      />
+    </div>
 
 syntax (name := ppmCmd) "#ppm " term : command
 
