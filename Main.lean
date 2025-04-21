@@ -11,9 +11,8 @@ def main : IO Unit := do
   }
   let camera ← Camera.init config
   let fileName := "scenes/four-spheres.json"
-  let s ← IO.FS.readFile fileName
-  let .ok json := Lean.Json.parse s
+  let .ok json := Lean.Json.parse (← IO.FS.readFile fileName)
     | IO.throwServerError s!"Failed to parse {fileName}"
-  match Lean.FromJson.fromJson? json with
-  | .ok world => IO.println <| PPM.display (← camera.render world)
-  | .error e => IO.throwServerError s!"Failed to deserialize {fileName}\n{e}"
+  let .ok world := Lean.FromJson.fromJson? json
+    | IO.throwServerError s!"Failed to deserialize {fileName}"
+  IO.println <| PPM.display (← camera.render world)
