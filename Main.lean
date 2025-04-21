@@ -21,13 +21,13 @@ def world :=
     Sphere.mk {
       center := ⟨-1.0, 0.0, -1.0⟩,
       radius := 0.5,
-      material := Metal.mk ⟨0.8, 0.8, 0.8⟩
+      material := Metal.mk ⟨0.8, 0.8, 0.8⟩ 0.3
     },
     -- Right
     Sphere.mk {
       center := ⟨1.0, 0.0, -1.0⟩,
       radius := 0.5,
-      material := Metal.mk ⟨0.8, 0.6, 0.2⟩
+      material := Metal.mk ⟨0.8, 0.6, 0.2⟩ 1.0
     }
   ]
 

@@ -29,10 +29,14 @@ end Lambertian
 
 namespace Metal
 
-def mk (albedo : Vec3) : Material := λ r normal point => do
-  let reflected := Vec3.reflect r.direction normal
-  let scattered := {origin := point, direction := reflected}
+def mk (albedo : Vec3) (fuzz : Float) : Material := λ r normal point => do
+  let v ← Vec3.randomUnit
+  let reflected := (Vec3.reflect r.direction normal).normalize + (fuzz * v)
+  let scattered : Ray := {origin := point, direction := reflected}
   let attenuation := albedo
-  return some {scattered, attenuation}
+  return if (scattered.direction ⬝ normal) > 0 then
+    some {scattered, attenuation}
+  else
+    none
 
 end Metal
