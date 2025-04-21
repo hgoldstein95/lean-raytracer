@@ -36,7 +36,7 @@ def mk (s : Args) : Entity := λ (r : Ray) tRange => do
   if let some t := root then
     let point := r.at t
     let outwardNormal := (point - s.center) / s.radius
-    Collision.mkWithOutwardNormal r t point outwardNormal s.material
+    some ⟨Collision.mkWithOutwardNormal r t point outwardNormal, s.material⟩
   else
     none
 

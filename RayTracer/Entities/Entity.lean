@@ -8,7 +8,7 @@ import RayTracer.Graphics.Collision
 def Entity :=
   (r : Ray) →
   (tRange : Interval) →
-  Option Collision
+  Option (Collision × Material)
 
 def Entity.ofList (objs : List Entity) : Entity :=
   λ (r : Ray) tRange => do
@@ -16,7 +16,7 @@ def Entity.ofList (objs : List Entity) : Entity :=
     let mut closestSoFar := tRange.max
     for obj in objs do
       let tRange' := {tRange with max := closestSoFar}
-      if let some collision := obj r tRange' then do
-        closestSoFar := collision.t
-        result := some collision
+      if let some p := obj r tRange' then do
+        closestSoFar := p.fst.t
+        result := some p
     result
