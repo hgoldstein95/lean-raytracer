@@ -82,6 +82,10 @@ def normalize (v : Vec3) : Vec3 := v / v.length
 def projectToHemisphere (v : Vec3) (normal : Vec3) : Vec3 :=
   if (v ⬝ normal) > 0.0 then v else -1.0 * v
 
+def isNearZero (v : Vec3) : Bool :=
+  let s := 1e-8
+  v.x.abs < s && v.y.abs < s && v.z.abs < s
+
 def random : IO Vec3 := do
   pure ⟨(← IO.randFloat), (← IO.randFloat), (← IO.randFloat)⟩
 

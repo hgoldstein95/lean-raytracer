@@ -15,7 +15,11 @@ namespace Lambertian
 
 def mk (albedo : Float) : Material := λ _ normal point => do
   let v ← Vec3.randomUnit
-  let direction := normal + v
+  let directionCandidate : Vec3 := normal + v
+
+  let direction :=
+    if directionCandidate.isNearZero then normal else directionCandidate
+
   pure {
     scattered := {origin := point, direction},
     attenuation := albedo,

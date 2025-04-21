@@ -3,7 +3,8 @@ import RayTracer.Basic
 
 open PPM RGB Vec3 Ray
 
-def spheres : Entity := Entity.ofList [
+def spheres : Entity :=
+  Entity.ofList [
     Sphere.mk {
       center := ⟨0, 0, -1⟩,
       radius := 0.5,
