@@ -18,4 +18,4 @@ def IO.randFloat : IO Float := do
   let ⟨lo, hi⟩ := RandomGen.range g
   let ⟨n, g'⟩ := RandomGen.next g
   IO.stdGenRef.set g'
-  pure ((n - lo).toFloat / (hi - lo).toFloat)
+  pure ((n - lo).toFloat / (hi - lo).toFloat + 1)

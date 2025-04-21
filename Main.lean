@@ -13,7 +13,7 @@ def spheres : List Hittable := [
 --     aspectRatio := 16.0 / 9.0,
 --     imageWidth := 400,
 --     samplesPerPixel := 1,
---     logging := true
+--     logging := false
 --   }
 --   let camera ← Camera.init config
 --   camera.renderWorld spheres

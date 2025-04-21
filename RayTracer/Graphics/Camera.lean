@@ -24,6 +24,7 @@ structure Camera where
   imageWidth : UInt64
   imageHeight : UInt64
   samplesPerPixel : Nat
+  pixelScaleFactor : Float
   center : Point3
   pixel00Loc : Vec3
   pixelDeltaU : Vec3
@@ -64,6 +65,7 @@ def init (config : CameraConfig := default) : IO Camera := do
     imageWidth,
     imageHeight,
     samplesPerPixel := config.samplesPerPixel,
+    pixelScaleFactor := 1 / config.samplesPerPixel.toFloat,
     center := cameraCenter,
     pixel00Loc,
     pixelDeltaU,
@@ -103,7 +105,7 @@ def renderWorld
       for _ in List.range camera.samplesPerPixel do
         let ray ← camera.getRay i j
         color := color + rayColor ray world
-      image := image.addPixel <| RGB.ofVec3 (color / camera.samplesPerPixel.toFloat)
+      image := image.addPixel <| RGB.ofVec3 (color * camera.pixelScaleFactor)
 
     if camera.logging then
       IO.eprint s!"Rendering: {progressBar j (image.height.toNat - 1) (ticks := 20)}\r"

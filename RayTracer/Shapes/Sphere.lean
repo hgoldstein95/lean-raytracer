@@ -19,8 +19,9 @@ instance : Hit Sphere where
     let discriminant := h * h - a * c
     if discriminant < 0 then none
 
-    let root₁ := (h - discriminant.sqrt) / a
-    let root₂ := (h + discriminant.sqrt) / a
+    let sqrtd := discriminant.sqrt
+    let root₁ := (h - sqrtd) / a
+    let root₂ := (h + sqrtd) / a
 
     let root : Option Float :=
       if tRange.contains root₁ then
