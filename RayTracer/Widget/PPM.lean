@@ -63,8 +63,8 @@ def renderPPM
         height={image.height.toNat}
         pixels={image.pixels.toList.map (λ p => ⟨p.r.toNat, p.g.toNat, p.b.toNat⟩)}
       />
-      <SliderChanger />
     </div>
+    -- <SliderChanger />
 
 syntax (name := ppmCmd) "#ppm " term : command
 
