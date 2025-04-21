@@ -4,29 +4,25 @@ import RayTracer.Basic
 def world :=
   Entity.ofList [
     -- Ground
-    Sphere.mk {
-      center := ⟨0, -100.5, -1⟩,
-      radius := 100,
-      material := .lambertian ⟨0.8, 0.8, 0.0⟩
-    },
+    .sphere
+      (center := ⟨0, -100.5, -1⟩)
+      (radius := 100)
+      (material := .lambertian ⟨0.8, 0.8, 0.0⟩),
     -- Center
-    Sphere.mk {
-      center := ⟨0, 0, -1.2⟩,
-      radius := 0.5,
-      material := .lambertian ⟨0.1, 0.2, 0.5⟩
-    },
+    .sphere
+      (center := ⟨0, 0, -1.2⟩)
+      (radius := 0.5)
+      (material := .lambertian ⟨0.1, 0.2, 0.5⟩),
     -- Left
-    Sphere.mk {
-      center := ⟨-1.0, 0.0, -1.0⟩,
-      radius := 0.5,
-      material := .dialectric 1.5
-    },
+    .sphere
+      (center := ⟨-1.0, 0.0, -1.0⟩)
+      (radius := 0.5)
+      (material := .dialectric 1.5),
     -- Right
-    Sphere.mk {
-      center := ⟨1.0, 0.0, -1.0⟩,
-      radius := 0.5,
-      material := .metal ⟨0.8, 0.6, 0.2⟩ 1.0
-    }
+    .sphere
+      (center := ⟨1.0, 0.0, -1.0⟩)
+      (radius := 0.5)
+      (material := .metal ⟨0.8, 0.6, 0.2⟩ 1.0),
   ]
 
 def main : IO Unit := do

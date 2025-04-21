@@ -10,6 +10,7 @@ inductive Material where
   | lambertian (albedo : Vec3)
   | metal (albedo : Vec3) (fuzz : Float)
   | dialectric (refractionIndex : Float)
+  deriving BEq, Repr
 
 namespace Material
 

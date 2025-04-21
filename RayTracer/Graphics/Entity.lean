@@ -5,55 +5,62 @@ import RayTracer.Geometry.Interval
 import RayTracer.Graphics.Material
 import RayTracer.Graphics.Collision
 
-def Entity :=
-  (r : Ray) →
-  (tRange : Interval) →
-  Option (Collision × Material)
+inductive Entity where
+  | sphere
+      (center : Point3)
+      (radius : Float)
+      (material : Material)
+  | ofList
+      (objs : List Entity)
+  deriving BEq, Repr
 
-def Entity.ofList (objs : List Entity) : Entity :=
-  λ (r : Ray) tRange => do
-    let mut result := none
-    let mut closestSoFar := tRange.max
-    for obj in objs do
-      let tRange' := {tRange with max := closestSoFar}
-      if let some p := obj r tRange' then do
-        closestSoFar := p.fst.t
-        result := some p
-    result
+namespace Entity
 
-namespace Sphere
+def collide
+    (e : Entity)
+    (r : Ray)
+    (tRange : Interval) :
+    Option (Collision × Material) :=
+  match e with
+  | sphere center radius material => collideSphere center radius material
+  | ofList objs => collideOfList objs
+  where
+    collideSphere center radius material := do
+      let oc : Vec3 := center - r.origin
+      let a := r.direction.lengthSquared
+      let h := r.direction ⬝ oc
+      let c := oc.lengthSquared - radius * radius
 
-structure Args where
-  center : Point3
-  radius : Float
-  material : Material
+      let discriminant := h * h - a * c
+      if discriminant < 0 then none
 
-def mk (s : Args) : Entity := λ (r : Ray) tRange => do
-  let oc : Vec3 := s.center - r.origin
-  let a := r.direction.lengthSquared
-  let h := r.direction ⬝ oc
-  let c := oc.lengthSquared - s.radius * s.radius
+      let sqrtd := discriminant.sqrt
+      let root₁ := (h - sqrtd) / a
+      let root₂ := (h + sqrtd) / a
 
-  let discriminant := h * h - a * c
-  if discriminant < 0 then none
+      let root : Option Float :=
+        if tRange.surrounds root₁ then
+          root₁
+        else if tRange.surrounds root₂ then
+          root₂
+        else
+          none
 
-  let sqrtd := discriminant.sqrt
-  let root₁ := (h - sqrtd) / a
-  let root₂ := (h + sqrtd) / a
+      if let some t := root then
+        let point := r.atT t
+        let outwardNormal := (point - center) / radius
+        some ⟨Collision.mkWithOutwardNormal r t point outwardNormal, material⟩
+      else
+        none
 
-  let root : Option Float :=
-    if tRange.surrounds root₁ then
-      root₁
-    else if tRange.surrounds root₂ then
-      root₂
-    else
-      none
+    collideOfList objs := do
+      let mut result := none
+      let mut closestSoFar := tRange.max
+      for obj in objs do
+        let tRange' := {tRange with max := closestSoFar}
+        if let some p := obj.collide r tRange' then do
+          closestSoFar := p.fst.t
+          result := some p
+      result
 
-  if let some t := root then
-    let point := r.atT t
-    let outwardNormal := (point - s.center) / s.radius
-    some ⟨Collision.mkWithOutwardNormal r t point outwardNormal, s.material⟩
-  else
-    none
-
-end Sphere
+end Entity
