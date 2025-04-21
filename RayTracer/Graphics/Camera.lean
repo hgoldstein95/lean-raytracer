@@ -95,10 +95,9 @@ private partial def rayColor [Hit World] (r : Ray) (world : World) (fuel : Nat) 
     return 0
 
   if let some collision := Hit.hit world r ⟨0.001, Float.infinity⟩ then
-    let v ← Vec3.randomUnit
-    let direction := collision.normal + v
-    let color ← rayColor {origin := collision.point, direction} world (fuel - 1)
-    return 0.5 * color
+    let scatter ← collision.material r collision.normal collision.point
+    let color ← rayColor scatter.scattered world (fuel - 1)
+    return scatter.attenuation * color
 
   let a : Float := 0.5 * (r.direction.normalize.y + 1)
   return (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)

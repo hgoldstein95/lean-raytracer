@@ -1,13 +1,14 @@
 import RayTracer.Geometry.Vec3
 import RayTracer.Geometry.Ray
 import RayTracer.Geometry.Hit
+import RayTracer.Graphics.Material
 
 open Ray
 
 structure Sphere where
   center : Point3
   radius : Float
-  deriving BEq, Repr
+  material : Material
 
 instance : Hit Sphere where
   hit := λ (s : Sphere) (r : Ray) tRange => do
@@ -34,6 +35,6 @@ instance : Hit Sphere where
     if let some t := root then
       let point := r.at t
       let outwardNormal := (point - s.center) / s.radius
-      Collision.mkWithOutwardNormal r t point outwardNormal
+      Collision.mkWithOutwardNormal r t point outwardNormal s.material
     else
       none
