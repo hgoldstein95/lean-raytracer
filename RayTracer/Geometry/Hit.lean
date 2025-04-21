@@ -10,20 +10,15 @@ structure Collision where
   frontFace : Bool
   deriving BEq, Repr
 
-def Collision.mkOutwardNormal
+def Collision.mkWithOutwardNormal
     (r : Ray)
     (t : Float)
     (point : Point3)
     (outwardNormal : Vec3) :
     Collision :=
-  let frontFace := (r.direction ⬝ outwardNormal) < 0
+  let frontFace := (r.direction ⬝ outwardNormal) < 0.0
   let normal := if frontFace then outwardNormal else -1.0 * outwardNormal
-  {
-    t := t,
-    point := point,
-    normal := normal,
-    frontFace := frontFace
-  }
+  {t, point, normal, frontFace}
 
 class Hit (α : Type u) where
   hit

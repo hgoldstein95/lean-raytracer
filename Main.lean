@@ -8,23 +8,13 @@ def spheres : List Hittable := [
     Hittable.mk (Sphere.mk ⟨0, -100.5, -1⟩ 100)
   ]
 
--- #ppm do
---   let config := {
---     aspectRatio := 16.0 / 9.0,
---     imageWidth := 400,
---     samplesPerPixel := 1,
---     logging := false
---   }
---   let camera ← Camera.init config
---   camera.renderWorld spheres
-
 def main : IO Unit := do
   let config := {
     aspectRatio := 16.0 / 9.0,
     imageWidth := 400,
-    samplesPerPixel := 10,
+    samplesPerPixel := 100,
+    maxRayDepth := 50,
     logging := true
   }
   let camera ← Camera.init config
-  let image ← camera.renderWorld spheres
-  IO.print image.display
+  IO.println <| PPM.display (← camera.render spheres)

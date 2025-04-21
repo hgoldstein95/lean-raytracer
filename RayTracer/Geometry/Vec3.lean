@@ -1,3 +1,5 @@
+import RayTracer.Util
+
 structure Vec3' (α : Type) where
   x : α
   y : α
@@ -69,14 +71,34 @@ def Vec3 := Vec3' Float
 namespace Vec3
 
 def lengthSquared (v : Vec3) : Float :=
-    (v.x * v.x) +
-    (v.y * v.y) +
-    (v.z * v.z)
+  (v.x * v.x) +
+  (v.y * v.y) +
+  (v.z * v.z)
 
 def length (v : Vec3) : Float := v.lengthSquared.sqrt
 
-def normalize (v : Vec3) : Vec3 :=
-  v / v.length
+def normalize (v : Vec3) : Vec3 := v / v.length
+
+def projectToHemisphere (v : Vec3) (normal : Vec3) : Vec3 :=
+  if (v ⬝ normal) > 0.0 then v else -1.0 * v
+
+def random : IO Vec3 := do
+  pure ⟨(← IO.randFloat), (← IO.randFloat), (← IO.randFloat)⟩
+
+def randomInRange (min max : Float) : IO Vec3 := do
+  pure ⟨
+      (← IO.randFloatInRange min max),
+      (← IO.randFloatInRange min max),
+      (← IO.randFloatInRange min max)
+    ⟩
+
+partial def randomUnit : IO Vec3 := do
+  let p ← Vec3.randomInRange (-1.0) 1.0
+  let lenSq := p.lengthSquared
+  if 1e-160 < lenSq && lenSq <= 1 then
+    pure (p / lenSq.sqrt)
+  else
+    Vec3.randomUnit
 
 end Vec3
 

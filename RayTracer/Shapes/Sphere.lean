@@ -24,16 +24,16 @@ instance : Hit Sphere where
     let root₂ := (h + sqrtd) / a
 
     let root : Option Float :=
-      if tRange.contains root₁ then
+      if tRange.surrounds root₁ then
         root₁
-      else if tRange.contains root₂ then
+      else if tRange.surrounds root₂ then
         root₂
       else
         none
 
     if let some t := root then
       let point := r.at t
-      let outwardNormal := Vec3.normalize (point - s.center)
-      Collision.mkOutwardNormal r t point outwardNormal
+      let outwardNormal := (point - s.center) / s.radius
+      Collision.mkWithOutwardNormal r t point outwardNormal
     else
       none

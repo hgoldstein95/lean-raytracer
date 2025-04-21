@@ -8,6 +8,7 @@ structure CameraConfig where
   aspectRatio : Float
   imageWidth : UInt64
   samplesPerPixel : Nat
+  maxRayDepth : Nat
   logging : Bool
   deriving BEq, Repr
 
@@ -15,6 +16,7 @@ instance : Inhabited CameraConfig where
   default := {
     aspectRatio := 16.0 / 9.0,
     imageWidth := 400,
+    maxRayDepth := 10,
     samplesPerPixel := 10,
     logging := false
   }
@@ -29,6 +31,7 @@ structure Camera where
   pixel00Loc : Vec3
   pixelDeltaU : Vec3
   pixelDeltaV : Vec3
+  maxRayDepth : Nat
   logging : Bool
 
 namespace Camera
@@ -70,6 +73,7 @@ def init (config : CameraConfig := default) : IO Camera := do
     pixel00Loc,
     pixelDeltaU,
     pixelDeltaV,
+    maxRayDepth := config.maxRayDepth,
     logging := config.logging,
   }
 
@@ -86,29 +90,35 @@ private def getRay (camera : Camera) (i j : Nat) : IO Ray := do
   let direction : Vec3 := pixelSample - camera.center
   pure {origin := camera.center, direction}
 
-private def rayColor [Hit World] (r : Ray) (world : World) : Vec3 := Id.run do
-  if let some collision := Hit.hit world r ⟨0, Float.infinity⟩ then
-    return (0.5 * (collision.normal + 1))
+private partial def rayColor [Hit World] (r : Ray) (world : World) (fuel : Nat) : IO Vec3 := do
+  if fuel == 0 then
+    return 0
+
+  if let some collision := Hit.hit world r ⟨0.001, Float.infinity⟩ then
+    let v ← Vec3.randomUnit
+    let direction := v.projectToHemisphere collision.normal
+    let color ← rayColor {origin := collision.point, direction} world (fuel - 1)
+    return 0.5 * color
 
   let a : Float := 0.5 * (r.direction.normalize.y + 1)
-  (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
+  return (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
 
-def renderWorld
-    [Hit World]
+def render
+    [Hit γ]
     (camera : Camera)
-    (world : World) :
+    (world : γ) :
     IO PPM := do
-  let mut image := PPM.empty camera.imageWidth camera.imageHeight
-  for j in List.range image.height.toNat do
-    for i in List.range image.width.toNat do
+  let mut image := PPM.init camera.imageWidth camera.imageHeight
+  for j in List.range camera.imageHeight.toNat do
+    for i in List.range camera.imageWidth.toNat do
       let mut color : Vec3 := ⟨0, 0, 0⟩
       for _ in List.range camera.samplesPerPixel do
         let ray ← camera.getRay i j
-        color := color + rayColor ray world
+        color := color + (← rayColor ray world camera.maxRayDepth)
       image := image.addPixel <| RGB.ofVec3 (color * camera.pixelScaleFactor)
 
     if camera.logging then
-      IO.eprint s!"Rendering: {progressBar j (image.height.toNat - 1) (ticks := 20)}\r"
+      IO.eprint s!"Rendering: {progressBar j (camera.imageHeight.toNat - 1) (ticks := 20)}\r"
 
   if camera.logging then IO.eprintln s!"\nDone."
   return image
