@@ -8,8 +8,8 @@ def spheres : List Hittable := [
     Hittable.mk (Sphere.mk ⟨0, -100.5, -1⟩ 100)
   ]
 
-#ppm Camera.renderWorld spheres
+#ppm Camera.init.renderWorld spheres
 
 def main : IO Unit := do
-  let image ← Camera.renderWorld spheres (logging := true)
+  let image ← Camera.init.renderWorld spheres (logging := true)
   IO.print image.display

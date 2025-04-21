@@ -15,6 +15,9 @@ def contains (i : Interval) (x : Float) : Bool :=
 def surrounds (i : Interval) (x : Float) : Bool :=
   i.min < x && x < i.max
 
+def clamp (i : Interval) (x : Float) : Float :=
+  if x < i.min then i.min else if i.max < x then i.max else x
+
 def everything : Interval := ⟨-Float.infinity, Float.infinity⟩
 
 def nothing : Interval := ⟨Float.infinity, -Float.infinity⟩
