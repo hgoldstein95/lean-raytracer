@@ -95,9 +95,11 @@ private partial def rayColor (r : Ray) (world : Entity) (fuel : Nat) : IO Vec3 :
     return 0
 
   if let some collision := world r ⟨0.001, Float.infinity⟩ then
-    let scatter ← collision.material r collision.normal collision.point
-    let color ← rayColor scatter.scattered world (fuel - 1)
-    return scatter.attenuation * color
+    if let some scatter ← collision.material r collision.normal collision.point then do
+      let color ← rayColor scatter.scattered world (fuel - 1)
+      return scatter.attenuation * color
+    else
+      return 0
 
   let a : Float := 0.5 * (r.direction.normalize.y + 1)
   return (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
