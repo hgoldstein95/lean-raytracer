@@ -53,6 +53,9 @@ instance [Mul α] : HMul (Vec3' α) α (Vec3' α) where
 instance [Mul α] : HMul α (Vec3' α) (Vec3' α) where
   hMul c v := v * c
 
+instance [Neg α] : Neg (Vec3' α) where
+  neg v := ⟨-v.x, -v.y, -v.z⟩
+
 instance
     [HMul (Vec3' α) α (Vec3' α)] [Div α] [OfNat α 1] :
     HDiv (Vec3' α) α (Vec3' α)
@@ -83,7 +86,7 @@ def length (v : Vec3) : Float := v.lengthSquared.sqrt
 def normalize (v : Vec3) : Vec3 := v / v.length
 
 def projectToHemisphere (v : Vec3) (normal : Vec3) : Vec3 :=
-  if (v ⬝ normal) > 0.0 then v else (-1.0 : Float) * v
+  if (v ⬝ normal) > 0.0 then v else -v
 
 def isNearZero (v : Vec3) : Bool :=
   let s := 1e-8
@@ -91,6 +94,12 @@ def isNearZero (v : Vec3) : Bool :=
 
 def reflect (v n : Vec3) : Vec3 :=
   v - 2 * (v ⬝ n) * n
+
+def refract (uv n : Vec3) (etaRatio : Float) : Vec3 :=
+  let cosTheta := min (-uv ⬝ n) 1.0
+  let rOutPerp : Vec3 := etaRatio * (uv + cosTheta * n)
+  let rOutPar : Vec3 := -(1.0 - rOutPerp.lengthSquared).abs.sqrt * n
+  rOutPerp + rOutPar
 
 def random : IO Vec3 := do
   pure ⟨(← IO.randFloat), (← IO.randFloat), (← IO.randFloat)⟩
