@@ -44,7 +44,7 @@
           "radius": 0.5,
           "material": {
             "dialectric": {
-              "refractionIndex": 1.5
+              "refractionIndex": 0.75
             }
           },
           "center": {

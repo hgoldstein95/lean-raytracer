@@ -13,7 +13,7 @@ def main : IO Unit := do
     samplesPerPixel := 100,
   }
 
-  let scene := include_str "scenes" / "four-spheres.json"
+  let scene ← IO.FS.readFile "scenes/four-spheres.json"
   let .ok json := Json.parse scene
     | IO.throwServerError s!"Failed to parse"
   let .ok world := FromJson.fromJson? json

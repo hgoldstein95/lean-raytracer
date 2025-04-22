@@ -54,10 +54,23 @@ def scatter
 
     scatterDialectric refractionIndex := do
       let ri :=
-        if collision.frontFace then 1.0 / refractionIndex else refractionIndex
-      let normDir := r.direction.normalize
-      let refracted := Vec3.refract normDir collision.normal ri
-      let scattered := {origin := collision.point, direction := refracted}
+        if collision.frontFace then
+          1.0 / refractionIndex
+        else
+          refractionIndex
+
+      let unitDir := r.direction.normalize
+      let cosTheta := min (-unitDir ⬝ collision.normal) 1.0
+      let sinTheta := (1.0 - cosTheta * cosTheta).sqrt
+
+      let cannotRefract := (ri * sinTheta) > 1.0
+      let direction :=
+        if cannotRefract then
+          Vec3.reflect unitDir collision.normal
+        else
+          Vec3.refract unitDir collision.normal ri
+
+      let scattered := {origin := collision.point, direction}
       return some {scattered, attenuation := 1}
 
 end Material
