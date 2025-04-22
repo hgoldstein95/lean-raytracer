@@ -1,5 +1,8 @@
+import Lean
 import RayTracer.Widget.PPM
 import RayTracer.Basic
+
+open Lean (ToJson FromJson Json)
 
 def main : IO Unit := do
   let config := {
@@ -9,10 +12,12 @@ def main : IO Unit := do
     logging := true,
     samplesPerPixel := 100,
   }
-  let camera ← Camera.init config
+
   let fileName := "scenes/four-spheres.json"
-  let .ok json := Lean.Json.parse (← IO.FS.readFile fileName)
+  let .ok json := Json.parse (← IO.FS.readFile fileName)
     | IO.throwServerError s!"Failed to parse {fileName}"
-  let .ok world := Lean.FromJson.fromJson? json
+  let .ok world := FromJson.fromJson? json
     | IO.throwServerError s!"Failed to deserialize {fileName}"
+
+  let camera ← Camera.init config
   IO.println <| PPM.display (← camera.render world)

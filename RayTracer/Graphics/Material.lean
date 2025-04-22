@@ -3,6 +3,8 @@ import RayTracer.Geometry.Ray
 import RayTracer.Geometry.Vec3
 import RayTracer.Graphics.Collision
 
+open Lean (ToJson FromJson)
+
 structure ScatterResult where
   attenuation : Vec3
   scattered : Ray
@@ -11,7 +13,7 @@ inductive Material where
   | lambertian (albedo : Vec3)
   | metal (albedo : Vec3) (fuzz : Float)
   | dialectric (refractionIndex : Float)
-  deriving BEq, Repr, Lean.ToJson, Lean.FromJson
+  deriving BEq, Repr, ToJson, FromJson
 
 namespace Material
 

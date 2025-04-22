@@ -111,9 +111,6 @@ def render
     (camera : Camera)
     (world : Entity) :
     IO PPM := do
-  if camera.logging then
-    IO.eprintln s!"World: {Lean.ToJson.toJson world}"
-
   let mut image := PPM.init camera.imageWidth camera.imageHeight
   for j in List.range camera.imageHeight.toNat do
     for i in List.range camera.imageWidth.toNat do

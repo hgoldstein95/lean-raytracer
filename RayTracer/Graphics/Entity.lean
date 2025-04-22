@@ -6,6 +6,8 @@ import RayTracer.Geometry.Interval
 import RayTracer.Graphics.Material
 import RayTracer.Graphics.Collision
 
+open Lean (ToJson FromJson)
+
 inductive Entity where
   | sphere
       (center : Point3)
@@ -13,7 +15,7 @@ inductive Entity where
       (material : Material)
   | ofList
       (objs : List Entity)
-  deriving BEq, Repr, Lean.ToJson, Lean.FromJson
+  deriving BEq, Repr, ToJson, FromJson
 
 namespace Entity
 
