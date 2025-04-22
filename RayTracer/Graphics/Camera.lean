@@ -118,24 +118,24 @@ private def getRay (camera : Camera) (i j : Float) : IO Ray := do
   let direction : Vec3 := pixelSample - camera.center
   pure {origin := camera.center, direction}
 
-private partial def rayColor
+private def rayColor
     (r : Ray)
     (world : Entity)
     (fuel : Nat) :
     IO Vec3 := do
-  if fuel == 0 then
-    return 0
+  match fuel with
+  | 0 => pure 0
+  | fuel' + 1 =>
+    if let some ⟨collision, material⟩ :=
+        world.collide r ⟨0.001, Float.infinity⟩ then
+      if let some scatter ← material.scatter r collision then do
+        let color ← rayColor scatter.scattered world fuel'
+        return scatter.attenuation * color
+      else
+        return 0
 
-  if let some ⟨collision, material⟩ :=
-      world.collide r ⟨0.001, Float.infinity⟩ then
-    if let some scatter ← material.scatter r collision then do
-      let color ← rayColor scatter.scattered world (fuel - 1)
-      return scatter.attenuation * color
-    else
-      return 0
-
-  let a : Float := 0.5 * (r.direction.normalize.y + 1)
-  return (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
+    let a : Float := 0.5 * (r.direction.normalize.y + 1)
+    return (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
 
 def render
     (camera : Camera)
