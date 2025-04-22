@@ -13,7 +13,7 @@ def mkSeed (s : UInt64 := 0) : Seed :=
 instance : Inhabited Seed where
   default := ⟨0, 0⟩
 
-def seedRange : UInt64 × UInt64 := (1, 2147483562)
+def seedMax : Float := 2147483562
 
 instance : Repr Seed where
   reprPrec | ⟨s1, s2⟩, _ => Std.Format.bracket "⟨" (repr s1 ++ ", " ++ repr s2) "⟩"
@@ -47,11 +47,8 @@ initialize IO.fastRandomRef : IO.Ref FastRandom.Seed ←
 
 -- In range [0, 1)
 def IO.randFloat : IO Float := do
-  let g ← IO.fastRandomRef.get
-  let ⟨lo, hi⟩ := FastRandom.seedRange
-  let ⟨n, g'⟩ := FastRandom.seedNext g
-  IO.fastRandomRef.set g'
-  pure ((n - lo).toFloat / ((hi - lo).toFloat + 1))
+  let n ← IO.fastRandomRef.modifyGet FastRandom.seedNext
+  return (n.toFloat - 1.0) / FastRandom.seedMax
 
 def IO.randFloatInRange (min max : Float) : IO Float := do
   let f ← IO.randFloat
