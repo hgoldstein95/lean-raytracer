@@ -7,6 +7,7 @@ structure CameraConfig where
   imageWidth : UInt64
   samplesPerPixel : Nat
   maxRayDepth : Nat
+  vfov : Float
   logging : Bool
   deriving BEq, Repr
 
@@ -16,8 +17,11 @@ instance : Inhabited CameraConfig where
     imageWidth := 400,
     maxRayDepth := 10,
     samplesPerPixel := 10,
-    logging := false
+    vfov := 90,
+    logging := false,
   }
+
+def CameraConfig.std : CameraConfig := default
 
 structure Camera where
   aspectRatio : Float
@@ -31,6 +35,7 @@ structure Camera where
   pixelDeltaV : Vec3
   maxRayDepth : Nat
   logging : Bool
+  vfov : Float
 
 namespace Camera
 
@@ -42,8 +47,11 @@ def init (config : CameraConfig := default) : IO Camera := do
   let imageWidth : UInt64 := config.imageWidth
   let imageHeight : UInt64 := max (imageWidth.toFloat / aspectRatio).toUInt64 1
 
+  let vfov := config.vfov
   let focalLength : Float := 1.0
-  let viewportHeight : Float := 2
+  let theta := Float.degreesToRadians vfov
+  let h := Float.tan (theta / 2.0)
+  let viewportHeight : Float := 2 * h * focalLength
   let viewportWidth : Float :=
     viewportHeight * (imageWidth.toFloat / imageHeight.toFloat)
   let cameraCenter : Point3 := 0
@@ -71,6 +79,7 @@ def init (config : CameraConfig := default) : IO Camera := do
     pixel00Loc,
     pixelDeltaU,
     pixelDeltaV,
+    vfov,
     maxRayDepth := config.maxRayDepth,
     logging := config.logging,
   }

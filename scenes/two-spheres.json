@@ -1,0 +1,44 @@
+{
+  "ofList": {
+    "objs": [
+      {
+        "sphere": {
+          "radius": 0.707107,
+          "material": {
+            "lambertian": {
+              "albedo": {
+                "z": 1,
+                "y": 0,
+                "x": 0
+              }
+            }
+          },
+          "center": {
+            "z": -1,
+            "y": 0,
+            "x": -0.707107
+          }
+        }
+      },
+      {
+        "sphere": {
+          "radius": 0.707107,
+          "material": {
+            "lambertian": {
+              "albedo": {
+                "z": 0,
+                "y": 0,
+                "x": 1
+              }
+            }
+          },
+          "center": {
+            "z": -1,
+            "y": 0,
+            "x": 0.707107
+          }
+        }
+      }
+    ]
+  }
+}
