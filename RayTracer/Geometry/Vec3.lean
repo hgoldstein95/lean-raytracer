@@ -1,11 +1,13 @@
 import Lean
 import RayTracer.FastRandom
 
+open Lean (ToJson FromJson)
+
 structure Vec3 where
   x : Float
   y : Float
   z : Float
-  deriving BEq, Repr, Lean.ToJson, Lean.FromJson
+  deriving BEq, Repr, ToJson, FromJson
 
 instance : ToString Vec3 where
   toString v := s!"⟨{v.x}, {v.y}, {v.z}⟩"
