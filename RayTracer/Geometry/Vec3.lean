@@ -1,88 +1,81 @@
 import Lean
 import RayTracer.FastRandom
 
-structure Vec3' (α : Type) where
-  x : α
-  y : α
-  z : α
+structure Vec3 where
+  x : Float
+  y : Float
+  z : Float
   deriving BEq, Repr, Lean.ToJson, Lean.FromJson
 
-namespace Vec3'
-
-instance [ToString α] : ToString (Vec3' α) where
+instance : ToString Vec3 where
   toString v := s!"⟨{v.x}, {v.y}, {v.z}⟩"
 
-instance [OfNat α 0] : OfNat (Vec3' α) 0 where
+instance : OfNat Vec3 0 where
   ofNat := ⟨0, 0, 0⟩
 
-instance [OfNat α 1] : OfNat (Vec3' α) 1 where
+instance : OfNat Vec3 1 where
   ofNat := ⟨1, 1, 1⟩
 
-instance [Add α] : HAdd (Vec3' α) (Vec3' α) (Vec3' α) where
+instance : HAdd Vec3 Vec3 Vec3 where
   hAdd v w := {
     x := v.x + w.x,
     y := v.y + w.y,
     z := v.z + w.z
   }
 
-instance [Add α] : HAdd (Vec3' α) α (Vec3' α) where
+instance : HAdd Vec3 Float Vec3 where
   hAdd v c := v + ⟨c, c, c⟩
 
-instance [Add α] : HAdd α (Vec3' α) (Vec3' α) where
+instance : HAdd Float Vec3 Vec3 where
   hAdd c v := v + c
 
-instance [Sub α] : HSub (Vec3' α) (Vec3' α) (Vec3' α) where
+instance : HSub Vec3 Vec3 Vec3 where
   hSub v w := {
     x := v.x - w.x,
     y := v.y - w.y,
     z := v.z - w.z
   }
 
-instance [Sub α] : HSub (Vec3' α) α (Vec3' α) where
+instance : HSub Vec3 Float Vec3 where
   hSub v c := v - ⟨c, c, c⟩
 
-instance [Mul α] : HMul (Vec3' α) (Vec3' α) (Vec3' α) where
+instance : HMul Vec3 Vec3 Vec3 where
   hMul v w := {
     x := v.x * w.x,
     y := v.y * w.y,
     z := v.z * w.z
   }
 
-instance [Mul α] : HMul (Vec3' α) α (Vec3' α) where
+instance : HMul Vec3 Float Vec3 where
   hMul v c := v * ⟨c, c, c⟩
 
-instance [Mul α] : HMul α (Vec3' α) (Vec3' α) where
+instance : HMul Float Vec3 Vec3 where
   hMul c v := v * c
 
-instance [Neg α] : Neg (Vec3' α) where
+instance : Neg Vec3 where
   neg v := ⟨-v.x, -v.y, -v.z⟩
 
 instance
-    [HMul (Vec3' α) α (Vec3' α)] [Div α] [OfNat α 1] :
-    HDiv (Vec3' α) α (Vec3' α)
+    [HMul Vec3 α Vec3] [Div α] [OfNat α 1] :
+    HDiv Vec3 α Vec3
   where
   hDiv v c := v * (1 / c)
 
-def dot [Add α] [Mul α] (v w : Vec3' α) : α :=
+namespace Vec3
+
+def dot (v w : Vec3) : Float :=
   v.x * w.x +
   v.y * w.y +
   v.z * w.z
 
-def cross [Mul α] [Sub α] (u v : Vec3' α) : Vec3' α :=
+notation a " ⬝ " b => dot a b
+
+def cross (u v : Vec3) : Vec3 :=
   {
     x := u.y * v.z - u.z * v.y,
     y := u.z * v.x - u.x * v.z,
     z := u.x * v.y - u.y * v.x,
   }
-
-notation a " ⬝ " b => dot a b
-
-end Vec3'
-
-@[reducible]
-def Vec3 := Vec3' Float
-
-namespace Vec3
 
 def lengthSquared (v : Vec3) : Float :=
   (v.x * v.x) +

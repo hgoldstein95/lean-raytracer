@@ -3,12 +3,11 @@ import RayTracer.Geometry.Interval
 
 open Vec3
 
-@[reducible]
-def RGB := Vec3' UInt8
-
-def RGB.r (px : RGB) : UInt8 := px.x
-def RGB.g (px : RGB) : UInt8 := px.y
-def RGB.b (px : RGB) : UInt8 := px.z
+structure RGB where
+  r : UInt8
+  g : UInt8
+  b : UInt8
+  deriving Repr, BEq
 
 def RGB.display (px : RGB) : String :=
   s!"{px.r} {px.g} {px.b}"
