@@ -123,9 +123,15 @@ partial def randomUnit : IO Vec3 := do
   let p ← Vec3.randomInRange (-1.0) 1.0
   let lenSq := p.lengthSquared
   if 1e-160 < lenSq && lenSq <= 1 then
-    pure (p / lenSq.sqrt)
-  else
-    Vec3.randomUnit
+    return (p / lenSq.sqrt)
+  randomUnit
+
+partial def randomInUnitDisk : IO Vec3 := do
+  let p : Vec3 :=
+    ⟨(← IO.randFloatInRange (-1) 1), (← IO.randFloatInRange (-1) 1), 0⟩
+  if p.lengthSquared < 1 then
+    return p
+  randomInUnitDisk
 
 end Vec3
 

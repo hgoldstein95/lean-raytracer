@@ -11,6 +11,8 @@ structure CameraConfig where
   lookFrom : Point3
   lookAt : Point3
   vUp : Vec3
+  defocusAngle : Float
+  focusDistance : Float
   logging : Bool
   deriving BEq, Repr
 
@@ -24,6 +26,8 @@ instance : Inhabited CameraConfig where
     lookFrom := 0,
     lookAt := ⟨0, 0, -1⟩,
     vUp := ⟨0, 1, 0⟩,
+    defocusAngle := 0,
+    focusDistance := 10,
     logging := false,
   }
 
@@ -44,6 +48,10 @@ structure Camera where
   vfov : Float
   lookFrom : Point3
   lookAt : Point3
+  defocusAngle : Float
+  focusDistance : Float
+  defocusDiskU : Vec3
+  defocusDiskV : Vec3
   vUp : Vec3
 
 namespace Camera
@@ -60,11 +68,12 @@ def init (config : CameraConfig := default) : IO Camera := do
   let lookFrom := config.lookFrom
   let lookAt := config.lookAt
   let vUp := config.vUp
+  let defocusAngle := config.defocusAngle
+  let focusDistance := config.focusDistance
 
-  let focalLength : Float := Vec3.length (lookFrom - lookAt)
   let theta := Float.degreesToRadians vfov
   let h := Float.tan (theta / 2.0)
-  let viewportHeight : Float := 2 * h * focalLength
+  let viewportHeight : Float := 2 * h * focusDistance
   let viewportWidth : Float :=
     viewportHeight * (imageWidth.toFloat / imageHeight.toFloat)
 
@@ -81,11 +90,16 @@ def init (config : CameraConfig := default) : IO Camera := do
 
   let viewportUpperLeft : Vec3 :=
     cameraCenter -
-      (focalLength * w) -
+      (focusDistance * w) -
       (viewportU / 2.0) -
       (viewportV / 2.0)
   let pixel00Loc : Vec3 :=
     viewportUpperLeft + (0.5 : Float) * (pixelDeltaU + pixelDeltaV)
+
+  let defocusRadius :=
+    focusDistance * Float.tan (Float.degreesToRadians (defocusAngle / 2.0))
+  let defocusDiskU := u * defocusRadius
+  let defocusDiskV := v * defocusRadius
 
   return {
     aspectRatio,
@@ -101,12 +115,22 @@ def init (config : CameraConfig := default) : IO Camera := do
     lookFrom,
     lookAt,
     vUp,
+    defocusAngle,
+    focusDistance,
+    defocusDiskU,
+    defocusDiskV,
     maxRayDepth := config.maxRayDepth,
     logging := config.logging,
   }
 
 private def sampleSquare : IO Vec3 := do
   pure ⟨(← IO.randFloat) - 0.5, (← IO.randFloat) - 0.5, 0⟩
+
+private def sampleDefocusDisk (camera : Camera) : IO Vec3 := do
+  let p ← Vec3.randomInUnitDisk
+  return camera.center +
+    (p.x * camera.defocusDiskU) +
+    (p.y * camera.defocusDiskV)
 
 private def getRay (camera : Camera) (i j : Float) : IO Ray := do
   let offset ←
@@ -115,8 +139,13 @@ private def getRay (camera : Camera) (i j : Float) : IO Ray := do
     camera.pixel00Loc +
     ((i + offset.x) * camera.pixelDeltaU) +
     ((j + offset.y) * camera.pixelDeltaV)
-  let direction : Vec3 := pixelSample - camera.center
-  pure {origin := camera.center, direction}
+  let origin ← do
+    if camera.defocusAngle <= 0 then
+      pure camera.center
+    else do
+      sampleDefocusDisk camera
+  let direction : Vec3 := pixelSample - origin
+  pure {origin, direction}
 
 private def rayColor
     (r : Ray)

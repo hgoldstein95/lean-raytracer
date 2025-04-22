@@ -9,9 +9,13 @@ def main : IO Unit := do
     CameraConfig.std with
     logging := true,
     samplesPerPixel := 100,
+
+    vfov := 20,
     lookFrom := ⟨-2, 2, 1⟩,
     lookAt := ⟨0, 0, -1⟩,
-    vfov := 20,
+
+    defocusAngle := 10,
+    focusDistance := 3.4,
   }
 
   let scene ← IO.FS.readFile "scenes/four-spheres.json"
