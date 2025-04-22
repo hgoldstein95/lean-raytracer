@@ -8,6 +8,9 @@ structure CameraConfig where
   samplesPerPixel : Nat
   maxRayDepth : Nat
   vfov : Float
+  lookFrom : Point3
+  lookAt : Point3
+  vUp : Vec3
   logging : Bool
   deriving BEq, Repr
 
@@ -18,6 +21,9 @@ instance : Inhabited CameraConfig where
     maxRayDepth := 10,
     samplesPerPixel := 10,
     vfov := 90,
+    lookFrom := 0,
+    lookAt := ⟨0, 0, -1⟩,
+    vUp := ⟨0, 1, 0⟩,
     logging := false,
   }
 
@@ -36,6 +42,9 @@ structure Camera where
   maxRayDepth : Nat
   logging : Bool
   vfov : Float
+  lookFrom : Point3
+  lookAt : Point3
+  vUp : Vec3
 
 namespace Camera
 
@@ -48,22 +57,31 @@ def init (config : CameraConfig := default) : IO Camera := do
   let imageHeight : UInt64 := max (imageWidth.toFloat / aspectRatio).toUInt64 1
 
   let vfov := config.vfov
-  let focalLength : Float := 1.0
+  let lookFrom := config.lookFrom
+  let lookAt := config.lookAt
+  let vUp := config.vUp
+
+  let focalLength : Float := Vec3.length (lookFrom - lookAt)
   let theta := Float.degreesToRadians vfov
   let h := Float.tan (theta / 2.0)
   let viewportHeight : Float := 2 * h * focalLength
   let viewportWidth : Float :=
     viewportHeight * (imageWidth.toFloat / imageHeight.toFloat)
-  let cameraCenter : Point3 := 0
 
-  let viewportU : Vec3 := ⟨viewportWidth, 0, 0⟩
-  let viewportV : Vec3 := ⟨0, -viewportHeight, 0⟩
+  let w := Vec3.normalize (lookFrom - lookAt)
+  let u := Vec3.normalize (vUp.cross w)
+  let v := w.cross u
+
+  let cameraCenter : Point3 := lookFrom
+
+  let viewportU : Vec3 := viewportWidth * u
+  let viewportV : Vec3 := viewportHeight * -v
   let pixelDeltaU : Vec3 := viewportU / imageWidth.toFloat
   let pixelDeltaV : Vec3 := viewportV / imageHeight.toFloat
 
   let viewportUpperLeft : Vec3 :=
     cameraCenter -
-      ⟨0, 0, focalLength⟩ -
+      (focalLength * w) -
       (viewportU / 2.0) -
       (viewportV / 2.0)
   let pixel00Loc : Vec3 :=
@@ -80,6 +98,9 @@ def init (config : CameraConfig := default) : IO Camera := do
     pixelDeltaU,
     pixelDeltaV,
     vfov,
+    lookFrom,
+    lookAt,
+    vUp,
     maxRayDepth := config.maxRayDepth,
     logging := config.logging,
   }

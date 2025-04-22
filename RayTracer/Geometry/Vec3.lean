@@ -67,6 +67,15 @@ def dot [Add α] [Mul α] (v w : Vec3' α) : α :=
   v.x * w.x +
   v.y * w.y +
   v.z * w.z
+    -- return vec3(u.e[1] * v.e[2] - u.e[2] * v.e[1],
+    --             u.e[2] * v.e[0] - u.e[0] * v.e[2],
+    --             u.e[0] * v.e[1] - u.e[1] * v.e[0]);
+def cross [Mul α] [Sub α] (u v : Vec3' α) : Vec3' α :=
+  {
+    x := u.y * v.z - u.z * v.y,
+    y := u.z * v.x - u.x * v.z,
+    z := u.x * v.y - u.y * v.x,
+  }
 
 notation a " ⬝ " b => dot a b
 
