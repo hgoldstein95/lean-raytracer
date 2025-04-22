@@ -56,14 +56,13 @@ def collide
       else
         none
 
-    collideOfList objs := do
-      let mut result := none
-      let mut closestSoFar := tRange.max
-      for obj in objs do
-        let tRange' := {tRange with max := closestSoFar}
-        if let some p := obj.collide r tRange' then do
-          closestSoFar := p.fst.t
-          result := some p
-      result
+    minByT? :=
+      @List.min?  _ {min a b := if min a.1.t b.1.t == a.1.t then a else b}
+
+    collideOfList objs :=
+      objs
+        |>.map (·.collide r tRange)
+        |>.reduceOption
+        |> minByT?
 
 end Entity
