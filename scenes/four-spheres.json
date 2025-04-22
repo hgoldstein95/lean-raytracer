@@ -44,7 +44,22 @@
           "radius": 0.5,
           "material": {
             "dialectric": {
-              "refractionIndex": 0.75
+              "refractionIndex": 1.5
+            }
+          },
+          "center": {
+            "z": -1,
+            "y": 0,
+            "x": -1
+          }
+        }
+      },
+      {
+        "sphere": {
+          "radius": 0.4,
+          "material": {
+            "dialectric": {
+              "refractionIndex": 0.6667
             }
           },
           "center": {

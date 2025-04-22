@@ -2,6 +2,7 @@ import Lean
 import RayTracer.Geometry.Ray
 import RayTracer.Geometry.Vec3
 import RayTracer.Graphics.Collision
+import RayTracer.Util
 
 open Lean (ToJson FromJson)
 
@@ -52,6 +53,11 @@ def scatter
       else
         none
 
+    reflectance cosine refractionIndex :=
+      let r0 := (1.0 - refractionIndex) / (1.0 + refractionIndex)
+      let r0 := r0 * r0
+      r0 + (1 - r0) * Float.pow (1 - cosine) 5
+
     scatterDialectric refractionIndex := do
       let ri :=
         if collision.frontFace then
@@ -64,8 +70,9 @@ def scatter
       let sinTheta := (1.0 - cosTheta * cosTheta).sqrt
 
       let cannotRefract := (ri * sinTheta) > 1.0
+      let f ← IO.randFloat
       let direction :=
-        if cannotRefract then
+        if cannotRefract || reflectance cosTheta ri > f then
           Vec3.reflect unitDir collision.normal
         else
           Vec3.refract unitDir collision.normal ri
