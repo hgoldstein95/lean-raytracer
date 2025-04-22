@@ -33,94 +33,66 @@ instance : Inhabited CameraConfig where
 
 def CameraConfig.std : CameraConfig := default
 
-structure Camera where
-  aspectRatio : Float
-  imageWidth : UInt64
+structure Camera extends CameraConfig where
   imageHeight : UInt64
-  samplesPerPixel : Nat
   pixelScaleFactor : Float
   center : Point3
   pixel00Loc : Vec3
   pixelDeltaU : Vec3
   pixelDeltaV : Vec3
-  maxRayDepth : Nat
-  logging : Bool
-  vfov : Float
-  lookFrom : Point3
-  lookAt : Point3
-  defocusAngle : Float
-  focusDistance : Float
   defocusDiskU : Vec3
   defocusDiskV : Vec3
-  vUp : Vec3
 
 namespace Camera
 
-def init (config : CameraConfig := default) : IO Camera := do
-  if config.logging then
-    IO.eprintln s!"Config: {repr config}"
+def init (cfg : CameraConfig := default) : IO Camera := do
+  if cfg.logging then
+    IO.eprintln s!"Config: {repr cfg}"
 
-  let aspectRatio : Float := config.aspectRatio
-  let imageWidth : UInt64 := config.imageWidth
-  let imageHeight : UInt64 := max (imageWidth.toFloat / aspectRatio).toUInt64 1
+  let imageHeight : UInt64 := max (cfg.imageWidth.toFloat / cfg.aspectRatio).toUInt64 1
 
-  let vfov := config.vfov
-  let lookFrom := config.lookFrom
-  let lookAt := config.lookAt
-  let vUp := config.vUp
-  let defocusAngle := config.defocusAngle
-  let focusDistance := config.focusDistance
-
-  let theta := Float.degreesToRadians vfov
+  let theta := Float.degreesToRadians cfg.vfov
   let h := Float.tan (theta / 2.0)
-  let viewportHeight : Float := 2 * h * focusDistance
+  let viewportHeight : Float := 2 * h * cfg.focusDistance
   let viewportWidth : Float :=
-    viewportHeight * (imageWidth.toFloat / imageHeight.toFloat)
+    viewportHeight * (cfg.imageWidth.toFloat / imageHeight.toFloat)
 
-  let w := Vec3.normalize (lookFrom - lookAt)
-  let u := Vec3.normalize (vUp.cross w)
+  let w := Vec3.normalize (cfg.lookFrom - cfg.lookAt)
+  let u := Vec3.normalize (cfg.vUp.cross w)
   let v := w.cross u
 
-  let cameraCenter : Point3 := lookFrom
+  let center : Point3 := cfg.lookFrom
 
   let viewportU : Vec3 := viewportWidth * u
   let viewportV : Vec3 := viewportHeight * -v
-  let pixelDeltaU : Vec3 := viewportU / imageWidth.toFloat
+  let pixelDeltaU : Vec3 := viewportU / cfg.imageWidth.toFloat
   let pixelDeltaV : Vec3 := viewportV / imageHeight.toFloat
 
   let viewportUpperLeft : Vec3 :=
-    cameraCenter -
-      (focusDistance * w) -
+    center -
+      (cfg.focusDistance * w) -
       (viewportU / 2.0) -
       (viewportV / 2.0)
   let pixel00Loc : Vec3 :=
     viewportUpperLeft + (0.5 : Float) * (pixelDeltaU + pixelDeltaV)
 
   let defocusRadius :=
-    focusDistance * Float.tan (Float.degreesToRadians (defocusAngle / 2.0))
+    cfg.focusDistance * Float.tan (Float.degreesToRadians (cfg.defocusAngle / 2.0))
   let defocusDiskU := u * defocusRadius
   let defocusDiskV := v * defocusRadius
 
+  let pixelScaleFactor := 1 / cfg.samplesPerPixel.toFloat
+
   return {
-    aspectRatio,
-    imageWidth,
+    toCameraConfig := cfg,
     imageHeight,
-    samplesPerPixel := config.samplesPerPixel,
-    pixelScaleFactor := 1 / config.samplesPerPixel.toFloat,
-    center := cameraCenter,
+    center,
+    pixelScaleFactor,
     pixel00Loc,
     pixelDeltaU,
     pixelDeltaV,
-    vfov,
-    lookFrom,
-    lookAt,
-    vUp,
-    defocusAngle,
-    focusDistance,
     defocusDiskU,
     defocusDiskV,
-    maxRayDepth := config.maxRayDepth,
-    logging := config.logging,
   }
 
 private def sampleSquare : IO Vec3 := do
