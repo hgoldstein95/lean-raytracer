@@ -1,11 +1,13 @@
 import RayTracer.Geometry.Ray
+import RayTracer.Geometry.OnlineMean
 import RayTracer.Graphics.PPM
 import RayTracer.Graphics.Entity
 
 structure CameraConfig where
   aspectRatio : Float
   imageWidth : UInt64
-  samplesPerPixel : Nat
+  maxSamplesPerPixel : Nat
+  minSamplesPerPixel : Nat
   maxRayDepth : Nat
   vfov : Float
   lookFrom : Point3
@@ -13,6 +15,7 @@ structure CameraConfig where
   vUp : Vec3
   defocusAngle : Float
   focusDistance : Float
+  convergenceCutoff : Float
   logging : Bool
   deriving BEq, Repr
 
@@ -20,14 +23,16 @@ instance : Inhabited CameraConfig where
   default := {
     aspectRatio := 16.0 / 9.0,
     imageWidth := 400,
-    maxRayDepth := 10,
-    samplesPerPixel := 10,
+    maxRayDepth := 50,
+    maxSamplesPerPixel := 100,
+    minSamplesPerPixel := 20,
     vfov := 90,
     lookFrom := 0,
     lookAt := ⟨0, 0, -1⟩,
     vUp := ⟨0, 1, 0⟩,
     defocusAngle := 0,
     focusDistance := 10,
+    convergenceCutoff := 0.0001,
     logging := false,
   }
 
@@ -35,7 +40,6 @@ def CameraConfig.std : CameraConfig := default
 
 structure Camera extends CameraConfig where
   imageHeight : UInt64
-  pixelScaleFactor : Float
   center : Point3
   pixel00Loc : Vec3
   pixelDeltaU : Vec3
@@ -81,13 +85,10 @@ def init (cfg : CameraConfig := default) : IO Camera := do
   let defocusDiskU := u * defocusRadius
   let defocusDiskV := v * defocusRadius
 
-  let pixelScaleFactor := 1 / cfg.samplesPerPixel.toFloat
-
   return {
     toCameraConfig := cfg,
     imageHeight,
     center,
-    pixelScaleFactor,
     pixel00Loc,
     pixelDeltaU,
     pixelDeltaV,
@@ -104,9 +105,8 @@ private def sampleDefocusDisk (camera : Camera) : IO Vec3 := do
     (p.x * camera.defocusDiskU) +
     (p.y * camera.defocusDiskV)
 
-private def getRay (camera : Camera) (i j : Float) : IO Ray := do
-  let offset ←
-    if camera.samplesPerPixel > 1 then sampleSquare else pure 0
+private def rayThrough (camera : Camera) (i j : Float) : IO Ray := do
+  let offset ← sampleSquare
   let pixelSample : Point3 :=
     camera.pixel00Loc +
     ((i + offset.x) * camera.pixelDeltaU) +
@@ -119,7 +119,7 @@ private def getRay (camera : Camera) (i j : Float) : IO Ray := do
   let direction : Vec3 := pixelSample - origin
   pure {origin, direction}
 
-private def rayColor
+private def trace
     (r : Ray)
     (world : Entity)
     (fuel : Nat) :
@@ -130,7 +130,7 @@ private def rayColor
     if let some ⟨collision, material⟩ :=
         world.collide r ⟨0.001, Float.infinity⟩ then
       if let some scatter ← material.scatter r collision then do
-        let color ← rayColor scatter.scattered world fuel'
+        let color ← trace scatter.scattered world fuel'
         return scatter.attenuation * color
       else
         return 0
@@ -138,21 +138,33 @@ private def rayColor
     let a : Float := 0.5 * (r.direction.normalize.y + 1)
     return (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
 
+
 def render
     (camera : Camera)
     (world : Entity) :
     IO PPM := do
   let mut image := PPM.init camera.imageWidth camera.imageHeight
+
   for j in List.range camera.imageHeight.toNat do
     for i in List.range camera.imageWidth.toNat do
-      let mut color : Vec3 := ⟨0, 0, 0⟩
-      for _ in List.range camera.samplesPerPixel do
-        let ray ← camera.getRay i.toInt32.toFloat j.toInt32.toFloat
-        color := color + (← rayColor ray world camera.maxRayDepth)
-      image := image.addPixel <| RGB.ofVec3 (color * camera.pixelScaleFactor)
+      let mut estimator := OnlineMean.init
+
+      for _ in List.range camera.minSamplesPerPixel do
+        let ray ← camera.rayThrough i.toInt32.toFloat j.toInt32.toFloat
+        let color ← trace ray world camera.maxRayDepth
+        estimator := estimator.addSample color
+
+      for _ in List.range (camera.maxSamplesPerPixel - camera.minSamplesPerPixel) do
+        let ray ← camera.rayThrough i.toInt32.toFloat j.toInt32.toFloat
+        let color ← trace ray world camera.maxRayDepth
+        estimator := estimator.addSample color
+        if estimator.convergenceDelta < camera.convergenceCutoff then
+          break
+
+      image := image.addPixel <| RGB.ofVec3 estimator.mean
 
     if camera.logging then
-      let bar := progressBar j (camera.imageHeight.toNat - 1) (ticks := 30)
+      let bar := progressBar j (camera.imageHeight.toNat - 1) (ticks := 40)
       IO.eprint s!"Rendering: {bar}\r"
 
   if camera.logging then IO.eprintln s!"\nDone."

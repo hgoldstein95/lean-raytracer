@@ -8,12 +8,16 @@ def main : IO Unit := do
   let config := {
     CameraConfig.std with
     logging := true,
-    samplesPerPixel := 100,
+
+    maxRayDepth := 50,
+    maxSamplesPerPixel := 500,
+    minSamplesPerPixel := 20,
+    convergenceCutoff := 0.0001,
 
     vfov := 20,
     lookFrom := ⟨-2, 2, 1⟩,
     lookAt := ⟨0, 0, -1⟩,
-
+    vUp := ⟨0, 1, 0⟩,
     defocusAngle := 10,
     focusDistance := 3.4,
   }
