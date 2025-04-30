@@ -166,7 +166,7 @@ def render
   let pixelsTask :=
     Task.mapList (λ xs => (averageAll xs).map RGB.ofVec3) <|
       (List.range camera.cores).map λ i =>
-        Task.spawn (prio := Task.Priority.dedicated) (λ () => computePixels i.toUInt32)
+        Task.spawn (prio := .dedicated) (λ () => computePixels i.toUInt32)
 
   return {
       width := camera.imageWidth,

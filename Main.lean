@@ -11,7 +11,7 @@ def main : IO Unit := do
 
     maxRayDepth := 50,
     samplesPerPixel := 8 * 12,
-    cores := 2,
+    cores := 4,
 
     vfov := 20,
     lookFrom := ⟨-2, 2, 1⟩,
