@@ -6,8 +6,7 @@ import RayTracer.Graphics.Entity
 structure CameraConfig where
   aspectRatio : Float
   imageWidth : UInt64
-  maxSamplesPerPixel : Nat
-  minSamplesPerPixel : Nat
+  samplesPerPixel : Nat
   maxRayDepth : Nat
   vfov : Float
   lookFrom : Point3
@@ -15,7 +14,7 @@ structure CameraConfig where
   vUp : Vec3
   defocusAngle : Float
   focusDistance : Float
-  convergenceCutoff : Float
+  cores : Nat
   logging : Bool
   deriving BEq, Repr
 
@@ -24,15 +23,14 @@ instance : Inhabited CameraConfig where
     aspectRatio := 16.0 / 9.0,
     imageWidth := 400,
     maxRayDepth := 50,
-    maxSamplesPerPixel := 100,
-    minSamplesPerPixel := 20,
+    samplesPerPixel := 100,
     vfov := 90,
     lookFrom := 0,
     lookAt := ⟨0, 0, -1⟩,
     vUp := ⟨0, 1, 0⟩,
     defocusAngle := 0,
     focusDistance := 10,
-    convergenceCutoff := 0.0001,
+    cores := 8,
     logging := false,
   }
 
@@ -96,16 +94,16 @@ def init (cfg : CameraConfig := default) : IO Camera := do
     defocusDiskV,
   }
 
-private def sampleSquare : IO Vec3 := do
-  pure ⟨(← IO.randFloat) - 0.5, (← IO.randFloat) - 0.5, 0⟩
+private def sampleSquare : CameraM Vec3 := do
+  pure ⟨(← .randFloat) - 0.5, (← .randFloat) - 0.5, 0⟩
 
-private def sampleDefocusDisk (camera : Camera) : IO Vec3 := do
+private def sampleDefocusDisk (camera : Camera) : CameraM Vec3 := do
   let p ← Vec3.randomInUnitDisk
   return camera.center +
     (p.x * camera.defocusDiskU) +
     (p.y * camera.defocusDiskV)
 
-private def rayThrough (camera : Camera) (i j : Float) : IO Ray := do
+private def rayThrough (camera : Camera) (i j : Float) : CameraM Ray := do
   let offset ← sampleSquare
   let pixelSample : Point3 :=
     camera.pixel00Loc +
@@ -123,7 +121,7 @@ private def trace
     (r : Ray)
     (world : Entity)
     (fuel : Nat) :
-    IO Vec3 := do
+    CameraM Vec3 := do
   match fuel with
   | 0 => pure 0
   | fuel' + 1 =>
@@ -138,36 +136,42 @@ private def trace
     let a : Float := 0.5 * (r.direction.normalize.y + 1)
     return (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
 
+def averageAll (pxs : List (Array Vec3)) : Array Vec3 := Option.get! do
+  let n ← (·.size) <$> pxs[0]?
+  return Array.ofFn (n := n) (λ i => Option.get! do
+    let row ← pxs.mapM (λ row => row[i]?)
+    return row.sum / row.length.toUInt32.toFloat)
 
 def render
     (camera : Camera)
     (world : Entity) :
     IO PPM := do
-  let mut image := PPM.init camera.imageWidth camera.imageHeight
+  let samplesPerTask := camera.samplesPerPixel / camera.cores
 
-  for j in List.range camera.imageHeight.toNat do
-    for i in List.range camera.imageWidth.toNat do
-      let mut estimator := OnlineMean.init
+  let computePixels : UInt32 → Array Vec3 := λ seed => CameraM.run seed do
+    let mut pixels := Array.emptyWithCapacity (camera.imageWidth * camera.imageHeight).toNat
+    for j in Array.range camera.imageHeight.toNat do
+      for i in Array.range camera.imageWidth.toNat do
+        let mut estimator := OnlineMean.init
 
-      for _ in List.range camera.minSamplesPerPixel do
-        let ray ← camera.rayThrough i.toInt32.toFloat j.toInt32.toFloat
-        let color ← trace ray world camera.maxRayDepth
-        estimator := estimator.addSample color
+        for _ in List.range samplesPerTask do
+          let ray ← camera.rayThrough i.toInt32.toFloat j.toInt32.toFloat
+          let color ← trace ray world camera.maxRayDepth
+          estimator := estimator.addSample color
 
-      for _ in List.range (camera.maxSamplesPerPixel - camera.minSamplesPerPixel) do
-        let ray ← camera.rayThrough i.toInt32.toFloat j.toInt32.toFloat
-        let color ← trace ray world camera.maxRayDepth
-        estimator := estimator.addSample color
-        if estimator.convergenceDelta < camera.convergenceCutoff then
-          break
+        pixels := pixels.push estimator.mean
 
-      image := image.addPixel <| RGB.ofVec3 estimator.mean
+    return pixels
 
-    if camera.logging then
-      let bar := progressBar j (camera.imageHeight.toNat - 1) (ticks := 40)
-      IO.eprint s!"Rendering: {bar}\r"
+  let pixelsTask :=
+    Task.mapList (λ xs => (averageAll xs).map RGB.ofVec3) <|
+      (List.range camera.cores).map λ i =>
+        Task.spawn (prio := Task.Priority.dedicated) (λ () => computePixels i.toUInt32)
 
-  if camera.logging then IO.eprintln s!"\nDone."
-  return image
+  return {
+      width := camera.imageWidth,
+      height := camera.imageHeight,
+      pixels := pixelsTask.get,
+    }
 
 end Camera

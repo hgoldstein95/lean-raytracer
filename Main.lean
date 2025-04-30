@@ -10,9 +10,8 @@ def main : IO Unit := do
     logging := true,
 
     maxRayDepth := 50,
-    maxSamplesPerPixel := 500,
-    minSamplesPerPixel := 20,
-    convergenceCutoff := 0.0001,
+    samplesPerPixel := 8 * 12,
+    cores := 2,
 
     vfov := 20,
     lookFrom := ⟨-2, 2, 1⟩,

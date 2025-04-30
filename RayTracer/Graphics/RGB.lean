@@ -9,6 +9,9 @@ structure RGB where
   b : UInt8
   deriving Repr, BEq
 
+instance : Inhabited RGB where
+  default := ⟨0, 0, 0⟩
+
 def RGB.display (px : RGB) : String :=
   s!"{px.r} {px.g} {px.b}"
 

@@ -22,7 +22,7 @@ def scatter
     (m : Material)
     (r : Ray)
     (collision : Collision) :
-    IO (Option ScatterResult) :=
+    CameraM (Option ScatterResult) :=
   match m with
   | lambertian albedo => scatterLambertian albedo
   | metal albedo fuzz => scatterMetal albedo fuzz
@@ -70,7 +70,7 @@ def scatter
       let sinTheta := (1.0 - cosTheta * cosTheta).sqrt
 
       let cannotRefract := (ri * sinTheta) > 1.0
-      let f ← IO.randFloat
+      let f ← .randFloat
       let direction :=
         if cannotRefract || reflectance cosTheta ri > f then
           Vec3.reflect unitDir collision.normal
