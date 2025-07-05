@@ -27,4 +27,4 @@ def main : IO Unit := do
     | IO.throwServerError s!"Failed to deserialize"
 
   let camera ← Camera.init config
-  IO.println <| PPM.display (← camera.render world)
+  IO.println <| PPM.display (← render camera world)

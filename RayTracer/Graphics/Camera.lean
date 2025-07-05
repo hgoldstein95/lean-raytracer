@@ -136,19 +136,13 @@ private def trace
     let a : Float := 0.5 * (r.direction.normalize.y + 1)
     return (1.0 - a) * (⟨1, 1, 1⟩ : Vec3) + a * (⟨0.5, 0.7, 1.0⟩ : Vec3)
 
-def averageAll (pxs : List (Array Vec3)) : Array Vec3 := Option.get! do
-  let n ← (·.size) <$> pxs[0]?
-  return Array.ofFn (n := n) (λ i => Option.get! do
-    let row ← pxs.mapM (λ row => row[i]?)
-    return row.sum / row.length.toUInt32.toFloat)
-
-def render
+def computePixels
     (camera : Camera)
-    (world : Entity) :
-    IO PPM := do
-  let samplesPerTask := camera.samplesPerPixel / camera.cores
-
-  let computePixels : UInt32 → Array Vec3 := λ seed => CameraM.run seed do
+    (world : Entity)
+    (seed : UInt32) :
+    BaseIO (Array Vec3) :=
+  return CameraM.run seed do
+    let samplesPerTask := camera.samplesPerPixel / camera.cores
     let mut pixels := Array.emptyWithCapacity (camera.imageWidth * camera.imageHeight).toNat
     for j in Array.range camera.imageHeight.toNat do
       for i in Array.range camera.imageWidth.toNat do
@@ -162,16 +156,5 @@ def render
         pixels := pixels.push estimator.mean
 
     return pixels
-
-  let pixelsTask :=
-    Task.mapList (λ xs => (averageAll xs).map RGB.ofVec3) <|
-      (List.range camera.cores).map λ i =>
-        Task.spawn (prio := .dedicated) (λ () => computePixels i.toUInt32)
-
-  return {
-      width := camera.imageWidth,
-      height := camera.imageHeight,
-      pixels := pixelsTask.get,
-    }
 
 end Camera
