@@ -1,5 +1,4 @@
 import Lean
-import RayTracer.Widget.PPM
 import RayTracer.Basic
 
 open Lean (ToJson FromJson Json)
