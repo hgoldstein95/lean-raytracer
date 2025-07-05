@@ -22,43 +22,73 @@ instance : OfNat Vec3 1 where
   ofNat := ⟨1, 1, 1⟩
 
 instance : Add Vec3 where
-  add v w := {
-    x := v.x + w.x,
-    y := v.y + w.y,
-    z := v.z + w.z
-  }
+  add v w :=
+    {
+      v with
+      x := v.x + w.x,
+      y := v.y + w.y,
+      z := v.z + w.z
+    }
 
 instance : HAdd Vec3 Float Vec3 where
-  hAdd v c := v + ⟨c, c, c⟩
+  hAdd v c :=
+    {
+      v with
+      x := v.x + c,
+      y := v.y + c,
+      z := v.z + c,
+    }
 
 instance : HAdd Float Vec3 Vec3 where
   hAdd c v := v + c
 
-instance : HSub Vec3 Vec3 Vec3 where
-  hSub v w := {
-    x := v.x - w.x,
-    y := v.y - w.y,
-    z := v.z - w.z
-  }
+instance : Sub Vec3 where
+  sub v w :=
+    {
+      v with
+      x := v.x - w.x,
+      y := v.y - w.y,
+      z := v.z - w.z
+    }
 
 instance : HSub Vec3 Float Vec3 where
-  hSub v c := v - ⟨c, c, c⟩
+  hSub v c :=
+    {
+      v with
+      x := v.x - c,
+      y := v.y - c,
+      z := v.z - c,
+    }
 
-instance : HMul Vec3 Vec3 Vec3 where
-  hMul v w := {
-    x := v.x * w.x,
-    y := v.y * w.y,
-    z := v.z * w.z
-  }
+instance : Mul Vec3 where
+  mul v w :=
+    {
+      v with
+      x := v.x * w.x,
+      y := v.y * w.y,
+      z := v.z * w.z,
+    }
 
 instance : HMul Vec3 Float Vec3 where
-  hMul v c := v * ⟨c, c, c⟩
+  hMul v c :=
+    {
+      v with
+      x := v.x * c,
+      y := v.y * c,
+      z := v.z * c,
+    }
 
 instance : HMul Float Vec3 Vec3 where
   hMul c v := v * c
 
 instance : Neg Vec3 where
-  neg v := ⟨-v.x, -v.y, -v.z⟩
+  neg v :=
+    {
+      v with
+      x := -v.x,
+      y := -v.y,
+      z := -v.z
+    }
 
 instance
     [HMul Vec3 α Vec3] [Div α] [OfNat α 1] :
